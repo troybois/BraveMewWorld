@@ -16,7 +16,10 @@ function dm_init() {
 
 	window.init_canvas_dg( WIDTH_DG, HEIGHT_DG );
 
-	var CANVAS_CREATE = document.getElementById( "creator" );
+	var CANVAS_CREATE = document.getElementById( "creator" ),
+		CANVAS_GAME = document.getElementById( "game" );
+
+	window.init_canvas_game( CANVAS_GAME, WIDTH_DG, HEIGHT_DG );
 
 	CANVAS_CREATE.width = WIDTH_CREATE_CANVAS;
 	CANVAS_CREATE.height = HEIGHT_CREATE_CANVAS;
@@ -130,7 +133,6 @@ function dm_init() {
 				dungeon_actions.pop();
 			}
 		} else if( up_r == 2 ) {
-			console.log( "r" );
 			up_r = 0;
 			if( tile_create_x != -1 && tile_create_y != -1 ) {
 				if( dungeon_actions.length > 0 ) {
