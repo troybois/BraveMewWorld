@@ -6,13 +6,15 @@ function dm_init() {
 	var TWIDTH_DG = 200,
 		THEIGHT_DG = 112,
 		SIZE_DG_TILE = 16,
-		WIDTH_DG = TWIDTH_DG * SIZE_DG_TILE,
-		HEIGHT_DG = THEIGHT_DG * SIZE_DG_TILE,
+		WIDTH_DG = ( TWIDTH_DG + 2 ) * SIZE_DG_TILE,
+		HEIGHT_DG = ( THEIGHT_DG + 6 ) * SIZE_DG_TILE,
 		WIDTH_CREATE_TILE = ( window.screen.width / TWIDTH_DG ) | 0,
 		HEIGHT_CREATE_TILE = ( window.screen.height / THEIGHT_DG ) | 0,
 		SIZE_CREATE_TILE = Math.min( WIDTH_CREATE_TILE, HEIGHT_CREATE_TILE ),
 		WIDTH_CREATE_CANVAS = SIZE_CREATE_TILE * TWIDTH_DG,
 		HEIGHT_CREATE_CANVAS = SIZE_CREATE_TILE * THEIGHT_DG;
+
+	window.init_canvas_dg( WIDTH_DG, HEIGHT_DG );
 
 	var CANVAS_CREATE = document.getElementById( "creator" );
 
@@ -42,6 +44,14 @@ function dm_init() {
 	var ctx_create = CANVAS_CREATE.getContext( "2d" ), 
 		tile_create_x = -1,
 		tile_create_y = -1,
+		start_x1 = -1,
+		start_x2 = -1,
+		start_y1 = -1,
+		start_y2 = -1,
+		end_x1 = -1,
+		end_x2 = -1,
+		end_y1 = -1,
+		end_y2 = -1,
 		dungeon_actions = [],
 		up_backspace = 0,
 		up_r = 0,
@@ -98,7 +108,6 @@ function dm_init() {
 		ctx_create.clearRect( 0, 0, WIDTH_CREATE_CANVAS, HEIGHT_CREATE_CANVAS );
 		if( down_enter ) {
 			SCREEN_CREATE.setAttribute( "class", "hide" );
-			SCREEN_JOIN.setAttribute( "class", "show" );
 			CANVAS_CREATE.removeEventListener( "mousemove", handle_mousemove_create );
 			CANVAS_CREATE.removeEventListener( "mouseout", handle_mouseout_create );
 			window.set_loop( null );
@@ -132,6 +141,16 @@ function dm_init() {
 				if( last_action == null || last_action.type != 'c'  ) {
 					if( last_action != null && last_action.type == 'r' ) {
 						dungeon_actions.push( new Action( last_action.x, last_action.y, 'R', tile_create_x, tile_create_y ) );
+						end_x1 = Math.min( last_action.x, tile_create_x );
+						end_y1 = Math.min( last_action.y, tile_create_y );
+						end_x2 = Math.max( last_action.x, tile_create_x );
+						end_y2 = Math.max( last_action.y, tile_create_y );
+						if( start_x1 == -1 ) {
+							start_x1 = end_x1;
+							start_y1 = end_y1;
+							start_x2 = end_x2;
+							start_y2 = end_y2;
+						}
 					} else {
 						if( last_action != null ) dungeon_actions.push( last_action );
 						dungeon_actions.push( new Action( tile_create_x, tile_create_y, 'r' ) );
@@ -206,11 +225,22 @@ function dm_init() {
 
 	window.set_loop( create_loop );
 
+	function Door( direction, offset ) {
+		this.direction = direction;
+		this.offset = offset;
+	}
+
 	function Cooridor( x1, y1, x2, y2 ) {
 		this.x1 = x1;
 		this.y1 = y1;
 		this.x2 = x2;
 		this.y2 = y2;
+		this.vertical = null;
+		if( ( ( x2 - x1 ) == 2 ) && ( ( y2 - y1 ) != 2 ) ) {
+			this.vertical = true;
+		} else if( ( ( x2 - x1 ) != 2 ) && ( ( y2 - y1 ) == 2 ) ) {
+			this.vertical = false;
+		}
 	}
 
 	function Room( x1, y1, x2, y2 ) {
@@ -218,12 +248,17 @@ function dm_init() {
 		this.y1 = y1;
 		this.x2 = x2;
 		this.y2 = y2;
+		this.doors = [];
 	}
 
 	var cooridors = [],
 		rooms = [],
 		tiles = [],
-		row;
+		row,
+		room,
+		cooridor,
+		start_room,
+		end_room;
 
 	for( i = 0; i < THEIGHT_DG; ++i ) {
 		row = [];
@@ -243,7 +278,13 @@ function dm_init() {
 					y1 = Math.min( action.y, action.y2 );
 					x2 = Math.max( action.x, action.x2 );
 					y2 = Math.max( action.y, action.y2 );
-					rooms.push( new Room( x1, y1, x2, y2 ) );
+					room = new Room( x1, y1, x2, y2 );
+					if( ( start_x1 == x1 && start_x2 == x2 ) && ( start_y1 == y1 && start_y2 == y2 ) ) {
+						start_room = room;
+					} else if( ( end_x1 == x1 && end_x2 == x2 ) && ( end_y1 == y1 && end_y2 == y2 ) ) {
+						end_room = room;
+					}
+					rooms.push( room );
 					break;
 				case 'C':
 					x1 = Math.min( action.x, action.x2 );
@@ -254,6 +295,46 @@ function dm_init() {
 					break;
 			}
 		}
+		var x, y;
+		for( i = 0; i < rooms.length; ++i ) {
+			room = rooms[ i ];
+			for( y = room.y1; y <= room.y2; ++y ) {
+				for( x = room.x1; x <= room.x2; ++x ) {
+					tiles[ y ][ x ] = i + 1;
+				}
+			}
+		}
+		console.log( tiles );
+		for( i = 0; i < cooridors.length; ++i ) {
+			cooridor = cooridors[ i ];
+			if( cooridor.vertical == null ) {
+				if( cooridor.y1 - 1 >= 0 && tiles[ cooridor.y1 - 1 ][ cooridor.x1 + 1 ] != 0 ) {
+					cooridor.vertical = true;
+				} else if( cooridor.x1 - 1 >= 0 && tiles[ cooridor.y1 - 1 ][ cooridor.x1 + 1 ] != 0 ) {
+					cooridor.vertical = false;
+				} 
+			}
+			if( cooridor.vertical ) {
+				room = rooms[ tiles[ cooridor.y1 - 1 ][ cooridor.x1 + 1 ] - 1 ];
+				room.doors.push( new Door( 's', cooridor.x1 + 1 ) );
+				room = rooms[ tiles[ cooridor.y2 + 1 ][ cooridor.x1 + 1 ] - 1 ];
+				room.doors.push( new Door( 'n', cooridor.x1 + 1 ) );
+			} else {
+				room = rooms[ tiles[ cooridor.y1 + 1 ][ cooridor.x1 - 1 ] - 1 ];
+				room.doors.push( new Door( 'e', cooridor.y1 + 1 ) );
+				room = rooms[ tiles[ cooridor.y1 + 1 ][ cooridor.x2 + 1 ] - 1 ];
+				room.doors.push( new Door( 'w', cooridor.y1 + 1 ) );
+			}
+			for( y = cooridor.y1; y <= cooridor.y2; ++y ) {
+				for( x = cooridor.x1; x <= cooridor.x2; ++x ) {
+					tiles[ y ][ x ] = rooms.length + i + 1;
+				}
+			}
+		}
+		window.render_dg_rooms( rooms );
+		window.render_dg_cooridors( cooridors );
+		SCREEN_JOIN.setAttribute( "class", "show" );
+		BUTTON_JOIN.addEventListener( "click", handle_button_join );
 	}
 
 	var INPUT_ROOM = document.getElementById( "roomInput" );
@@ -282,12 +363,9 @@ function dm_init() {
 				window.send( value );
 			}
 		}
-		console.log( INPUT_ROOM );
 	}
 
 	window.init_conn( handle_open, handle_msg );
-
-	BUTTON_JOIN.addEventListener( "click", handle_button_join );
 }
 
 dm_init();
