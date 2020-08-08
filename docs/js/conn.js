@@ -1,9 +1,8 @@
 // conn.js
-function init_conn( isDM, open_handler, msg_handler ) {
+function init_conn( open_handler, msg_handler ) {
 	var URL = "ws://34.209.226.143:25565";
 	
-	var player = !isDM,
-		ws = new WebSocket( URL ),
+	var ws = new WebSocket( URL ),
 		open = false;
 
 	function on_reopen() {
@@ -26,6 +25,8 @@ function init_conn( isDM, open_handler, msg_handler ) {
 	function send( msg ) {
 		if( open ) {
 			ws.send( msg );
+		} else {
+			console.log( "closed" );
 		}
 	}
 
