@@ -1,5 +1,5 @@
 // conn.js
-function init_conn( isDM, msg_handler ) {
+function init_conn( isDM, open_handler, msg_handler ) {
 	var URL = "ws://34.209.226.143:25565";
 	
 	var player = !isDM,
@@ -10,9 +10,7 @@ function init_conn( isDM, msg_handler ) {
 	}
 
 	function on_open() {
-		if( !player ) {
-			ws.send( "host" );
-		}
+		open_handler();
 	}
 
 	function on_msg( evt ) {
