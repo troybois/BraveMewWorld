@@ -3,13 +3,15 @@ function init_conn( isDM, open_handler, msg_handler ) {
 	var URL = "ws://34.209.226.143:25565";
 	
 	var player = !isDM,
-		ws = new WebSocket( URL );;
+		ws = new WebSocket( URL ),
+		open = false;
 
 	function on_reopen() {
 
 	}
 
 	function on_open() {
+		open = true;
 		open_handler();
 	}
 
@@ -18,11 +20,13 @@ function init_conn( isDM, open_handler, msg_handler ) {
 	}
 
 	function on_close( evt ) {
-
+		open = false;
 	}
 
 	function send( msg ) {
-		ws.send( msg );
+		if( open ) {
+			ws.send( msg );
+		}
 	}
 
 	ws.addEventListener( "open", on_open );
