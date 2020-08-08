@@ -21,6 +21,8 @@ function dm_init() {
 	CANVAS_CREATE.style.marginTop = ( -( ( HEIGHT_CREATE_CANVAS / 2 ) | 0 ) ).toString() + "px";
 	CANVAS_CREATE.style.marginLeft = ( -( ( WIDTH_CREATE_CANVAS / 2 ) | 0 ) ).toString() + "px";
 
+	var i, j;
+
 	function Action( x, y, type, x2, y2 ) {
 		this.x = x;
 		this.y = y;
@@ -63,13 +65,17 @@ function dm_init() {
 
 	var down_backspace = false,
 		down_r = false,
-		down_c = false;
+		down_c = false
+		down_enter = false;
 
 	function keyblade( code, pressed ) {
 		console.log( code );
 		switch( code ) {
 			case 8: //BACKSPACE
 				down_backspace = pressed;
+				break;
+			case 13: // ENTER
+				down_enter = pressed;
 				break;
 			case 82: //R
 				down_r = pressed;
@@ -90,6 +96,14 @@ function dm_init() {
 
 	function create_loop( time ) {
 		ctx_create.clearRect( 0, 0, WIDTH_CREATE_CANVAS, HEIGHT_CREATE_CANVAS );
+		if( down_enter ) {
+			SCREEN_CREATE.setAttribute( "class", "hide" );
+			SCREEN_JOIN.setAttribute( "class", "show" );
+			CANVAS_CREATE.removeEventListener( "mousemove", handle_mousemove_create );
+			CANVAS_CREATE.removeEventListener( "mouseout", handle_mouseout_create );
+			window.set_loop( null );
+			parse_actions();
+		}
 		if( down_backspace && up_r == 0 && up_c == 0 ) up_backspace = 1;
 		else if( up_backspace == 1 ) up_backspace = 2;
 		else {
@@ -147,7 +161,7 @@ function dm_init() {
 			}
 		}
 		var x1, y1, x2, y2;
-		for( var i = 0; i < dungeon_actions.length; ++i ) {
+		for( i = 0; i < dungeon_actions.length; ++i ) {
 			last_action = dungeon_actions[ i ];
 			switch( last_action.type ) {
 				case 'C':
@@ -191,6 +205,56 @@ function dm_init() {
 	document.addEventListener( "keydown", handle_keydown );
 
 	window.set_loop( create_loop );
+
+	function Cooridor( x1, y1, x2, y2 ) {
+		this.x1 = x1;
+		this.y1 = y1;
+		this.x2 = x2;
+		this.y2 = y2;
+	}
+
+	function Room( x1, y1, x2, y2 ) {
+		this.x1 = x1;
+		this.y1 = y1;
+		this.x2 = x2;
+		this.y2 = y2;
+	}
+
+	var cooridors = [],
+		rooms = [],
+		tiles = [],
+		row;
+
+	for( i = 0; i < THEIGHT_DG; ++i ) {
+		row = [];
+		for( j = 0; j < TWIDTH_DG; ++j ) {
+			row.push( 0 );
+		}
+		tiles.push( row );
+	}
+
+	function parse_actions() {
+		var action, x1, y1, x2, y2;
+		while( dungeon_actions.length > 0 ) {
+			action = dungeon_actions.pop();
+			switch( action.type ) {
+				case 'R':
+					x1 = Math.min( action.x, action.x2 );
+					y1 = Math.min( action.y, action.y2 );
+					x2 = Math.max( action.x, action.x2 );
+					y2 = Math.max( action.y, action.y2 );
+					rooms.push( new Room( x1, y1, x2, y2 ) );
+					break;
+				case 'C':
+					x1 = Math.min( action.x, action.x2 );
+					y1 = Math.min( action.y, action.y2 );
+					x2 = Math.max( action.x, action.x2 );
+					y2 = Math.max( action.y, action.y2 );
+					cooridors.push( new Cooridor( x1, y1, x2, y2 ) );
+					break;
+			}
+		}
+	}
 
 	var INPUT_ROOM = document.getElementById( "roomInput" );
 
