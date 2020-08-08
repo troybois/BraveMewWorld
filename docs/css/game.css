@@ -1,3 +1,17 @@
+body, html {
+	padding: 0px;
+	margin: 0px;
+	height: 100%;
+	width: 100%;
+}
+
+#creator {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	background: #000000;
+}
+
 .hide {
 	display: none!important;
 }

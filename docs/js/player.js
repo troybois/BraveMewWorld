@@ -1,4 +1,7 @@
 // player.js
+var SCREEN_JOIN = document.getElementById( "joinRoom" ),
+	SCREEN_WAIT = document.getElementById( "waitRoom" );
+
 var INPUT_ROOM = document.getElementById( "roomInput" );
 
 var BUTTON_JOIN = document.getElementById( "submitRoom" );
