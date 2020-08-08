@@ -13,5 +13,6 @@ const sampler = new Tone.Sampler({
 Tone.loaded().then(() => {
 	sampler.triggerAttackRelease(["Eb4", "G4", "Bb4"], 4);
 })
+}
 
 document.getElementById( "start" ).addEventListener( "click", demo );
