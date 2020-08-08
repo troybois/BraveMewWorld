@@ -4,7 +4,7 @@ using namespace std;
 
 us_listen_socket_t* listener;
 
-void on_message( uWS::WebSocket<false, true>* ws, string_view msg, uWS::OpCode, oc ) {
+void on_message( uWS::WebSocket<false, true>* ws, string_view msg, uWS::OpCode oc ) {
 
 }
 
