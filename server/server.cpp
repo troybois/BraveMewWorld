@@ -62,6 +62,7 @@ void on_message( uWS::WebSocket<false, true>* ws, string_view msg, uWS::OpCode o
 	} else {
 		if( msg == "host" ) {
 			client->host = true;
+		} else if( msg == "ping" ) {
 		} else {
 			if( client->room ) {
 			} else {
