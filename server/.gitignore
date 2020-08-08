@@ -1,0 +1,6 @@
+*.o
+bmw
+src
+src/*
+uSockets
+uSockets/*
