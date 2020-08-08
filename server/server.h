@@ -8,17 +8,20 @@
 #include "App.h"
 
 #define ROOM_COUNT 512
+#define MAX_PLAYERS 5
 
 struct BMWRoom {
 	BMWRoom* next;
-	void* clients;
+	void** clients;
+	void* host;
+	int players;
 	std::string name;
 };
 
 struct BMWClient {
 	BMWRoom* room;
 	bool host;
-	bool active;
+	uWS::WebSocket<false, true>* ws;
 };
 
 #endif

@@ -8,17 +8,24 @@ BMWRoom** rooms = ( BMWRoom** ) malloc( sizeof( BMWRoom* ) * ROOM_COUNT );
 
 void init_rooms() {
 	for( int i = 0; i < ROOM_COUNT; ++i ) {
-		rooms[ i ] = 0;
+		*( rooms + i ) = 0;
 	}
 }
 
 BMWRoom* get_room( BMWRoom** room, string name, bool host ) {
 	BMWRoom* n;
 	if( host ) {
-	        n = ( BMWRoom* ) malloc( sizeof( BMWRoom ) );
+	        n = new BMWRoom;
+		if( !n ) return 0;
 		n->name = name;
-		n->clients = malloc( sizeof( BMWRoom ) * 5 );
+		n->clients = ( void** ) malloc( sizeof( BMWClient* ) * MAX_PLAYERS );
+		if( !n->clients ) return 0;
+		for( int i = 0; i < MAX_PLAYERS; ++i ) {
+			*( n->clients + i ) = 0;
+		}
+		n->host = 0;
 		n->next = 0;
+		n->players = 0;
 		if( !n || !( n->clients ) ) return 0;
 	} else {
 		n = 0;	
@@ -51,6 +58,19 @@ BMWRoom* get_room( BMWRoom** room, string name, bool host ) {
 	}
 }
 
+void join_room( BMWRoom* room, BMWClient* client ) {
+	void* c;
+	for( int i = 0; i < MAX_PLAYERS; ++i ) {
+		c = *( room->clients + i );
+		if( c ) {
+		} else {
+			*( room->clients + i ) = client;
+			break;
+		}
+	}
+	++( room->players );
+}
+
 int hash_room( string name ) {
 	int sum = 0;
 	for( int i = 0; i < name.size(); i++ ) {
@@ -65,36 +85,55 @@ void send( uWS::WebSocket<false, true>* ws, string msg ) {
 }
 
 void broadcast( uWS::WebSocket<false, true>* ws, string msg ) {
-
+	BMWClient* client = ( BMWClient* ) ( ws->getUserData() );
+	BMWClient* c;
+	BMWRoom* room = client->room;
+	for( int i = 0; i < MAX_PLAYERS; ++i ) {
+		c = ( BMWClient* ) *( room->clients + i );
+		if( c != client ) {
+			send( c->ws, msg );
+		}
+	}
 }
 
 void on_message( uWS::WebSocket<false, true>* ws, string_view msg, uWS::OpCode oc ) {
 	BMWClient* client = ( BMWClient* ) ( ws->getUserData() );
 	if( client->room ) {
-	
+		if( msg == "ping" ) {
+			send( ws, "pong" );
+		} else {
+			broadcast( ws, string( msg ) );
+		}
 	} else {
 		if( msg == "host" ) {
 			client->host = true;
 		} else if( msg == "ping" ) {
 			send( ws, "pong" );
 		} else {
-			if( client->room ) {
-			} else {
-				string name( msg );
-				BMWRoom* room = get_room( rooms + hash_room( name ), name, client->host );
-				if( room ) {
-					client->room = room;
-					if( client->host ) {
-						send( ws, "0|Successfully created room!" );
+			string name( msg );
+			BMWRoom* room = get_room( rooms + hash_room( name ), name, client->host );
+			if( room ) {
+				client->room = room;
+				if( client->host ) {
+					if( room->host ) {
+						send( ws, "3|Room already exists." );
 					} else {
-						send( ws, "0|Successfully joined room!" );
+						send( ws, "0|Successfully created room!" );
+						room->host = client;
 					}
 				} else {
-					if( client->host ) {
-						send( ws, "2|Cannot create room." );
+					if( room->players < MAX_PLAYERS ) {
+						send( ws, "0|Successfully joined room!" );
+						join_room( room, client );
 					} else {
-						send( ws, "1|Room does not exist." );
+						send( ws, "3|Room is already full." );
 					}
+				}
+			} else {
+				if( client->host ) {
+					send( ws, "2|Cannot create room." );
+				} else {
+					send( ws, "1|Room does not exist." );
 				}
 			}
 		}
@@ -110,9 +149,9 @@ int main() {
 		.maxBackpressure = 1 * 1024 * 1024,
 		.open = []( auto* ws ) {
 			BMWClient* client = ( BMWClient* ) ( ws->getUserData() );
-			client->active = true;
 			client->host = false;
 			client->room = 0;
+			client->ws = ws;
 		},
 		.message = []( auto* ws, string_view msg, uWS::OpCode oc ) {
 			on_message( ws, msg, oc );
