@@ -18,20 +18,32 @@ BMWRoom* get_room( BMWRoom** room, string name, bool host ) {
 	        n = ( BMWRoom* ) malloc( sizeof( BMWRoom ) );
 		n->name = name;
 		n->clients = malloc( sizeof( BMWRoom ) * 5 );
+		n->next = 0;
+		if( !n || !( n->clients ) ) return 0;
 	} else {
 		n = 0;	
 	}
-	if( !n || !( n->clients ) ) return 0;
 	if( ( *room ) ) {
 		BMWRoom* p = *room;
-		while( p->next ) {
-			if( p->name == name ) {
+		if( p->name == name ) {
+			if( n ) {
 				free( n->clients );
 				n->clients = 0;
 				free( n );
+			}
+			return p;
+		}
+		while( p->next ) {
+			cout << p->name << endl;
+			p = p->next;
+			if( p->name == name ) {
+				if( n ) {
+					free( n->clients );
+					n->clients = 0;
+					free( n );
+				}
 				return p;
 			}
-			p = p->next;
 		}
 		return p->next = n;
 	} else {
@@ -44,6 +56,7 @@ int hash_room( string name ) {
 	for( int i = 0; i < name.size(); i++ ) {
 		sum += name[ i ];
 	}
+	cout << ( sum % ROOM_COUNT ) << " " << name << endl;
 	return sum % ROOM_COUNT;
 }
 
@@ -63,6 +76,7 @@ void on_message( uWS::WebSocket<false, true>* ws, string_view msg, uWS::OpCode o
 		if( msg == "host" ) {
 			client->host = true;
 		} else if( msg == "ping" ) {
+			send( ws, "pong" );
 		} else {
 			if( client->room ) {
 			} else {
