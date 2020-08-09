@@ -157,7 +157,8 @@ function player_init() {
 		last_dx = 0,
 		last_dy = 0,
 		me,
-		boss;
+		boss,
+		projectiles;
 
 	function get_tile( ent_x, ent_y ) {
 		var tx = ( ent_x / SIZE_DG_TILE ) | 0,
@@ -226,7 +227,36 @@ function player_init() {
 				}
 			}
 		}
-		window.set_render_players( players );
+		for( i = 0; i < player_list.length; ++i ) {
+			for( j = 0; j < projectiles[ player_list[ i ] ]; ++j ) {
+				ent = projectiles[ player_list[ i ] ][ j ];
+				if( ent.room == -1 ) continue;
+				next_x = ent.x + ent.dx * ticks;
+				next_y = ent.y + ent.dy * ticks;
+				tile = get_tile( next_x, next_y );
+				if( tile > 0 ) {
+					ent.x = next_x;
+					ent.y = next_y;
+					if( tile != ent.room ) {
+						ent.room = -1;
+					}
+				}
+			}
+		}
+		for( j = 0; j < projectiles[ "boss" ]; ++j ) {
+			ent = projectiles[ player_list[ i ] ][ j ];
+			if( ent.room == -1 ) continue;
+			next_x = ent.x + ent.dx * ticks;
+			next_y = ent.y + ent.dy * ticks;
+			tile = get_tile( next_x, next_y );
+			if( tile > 0 ) {
+				ent.x = next_x;
+				ent.y = next_y;
+				if( tile != ent.room ) {
+					ent.room = -1;
+				}
+			}
+		}
 		window.set_viewpoint( me.x, me.y );
 		last_update	= time;
 		last_dx = me.dx;
@@ -308,12 +338,15 @@ function player_init() {
 						window.set_bgpry( false, -1 );
 						window.enable_view();
 						players = obj_data.players;
+						set_render_players( players );
 						me = players[ selected ];
 						for( i = 0; i < obj_data.player_list.length; ++i ) {
 							entities.push( players[ obj_data.player_list[ i ] ] );
 						}
 						player_list = obj_data.player_list;
 						boss = obj_data.boss;
+						projectiles = obj_data.projectiles;
+						window.set_render_projectiles( projectiles );
 						entities.push( boss );
 						window.set_render_boss( boss );
 						window.set_player_list( player_list );
@@ -407,6 +440,7 @@ function player_init() {
 				//alert( "" );
 			} else {
 				window.send( value );
+				window.play_music();
 			}
 		}
 		console.log( INPUT_ROOM );

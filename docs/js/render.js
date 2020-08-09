@@ -204,6 +204,7 @@ function init_renderer() {
 	var game_started = false,
 		player_list = [],
 		players,
+		projectiles,
 		updates = {},
 		ctx_dg,
 		ctx_game,
@@ -376,6 +377,10 @@ function init_renderer() {
 
 	function set_render_players( pll ) {
 		players = pll;
+	}
+
+	function set_render_projectiles( pr ) {
+		projectiles = pr;
 	}
 
 	function set_render_boss( b ) {
@@ -592,17 +597,17 @@ function init_renderer() {
 					upd.frame = ( upd.frame + 1 ) % frm;
 					upd.last_anim = time;
 				}
-				ctx_game.drawImage( ass, upd.frame * 32, 0, 32, 32, ( pll.x - view_x + HWIDTH_VIEWPORT ) | 0, ( pll.y - view_y + HHEIGHT_VIEWPORT ) | 0, 32, 32 );
+				ctx_game.drawImage( ass, upd.frame * 32, 0, 32, 32, ( pll.x - view_x + HWIDTH_VIEWPORT - 16 ) | 0, ( pll.y - view_y + HHEIGHT_VIEWPORT - 32 ) | 0, 32, 32 );
 			}
 			if( boss.room == curr_tile ) {
 				if( boss.dx < 0 ) {
-					ctx_game.drawImage( ASSET_DEERMONGER_L, frame_boss * 128, 0, 128, 128, ( boss.x - view_x + HWIDTH_VIEWPORT ) | 0, ( boss.y - view_y + HHEIGHT_VIEWPORT ) | 0, 128, 128 );
+					ctx_game.drawImage( ASSET_DEERMONGER_L, frame_boss * 128, 0, 128, 128, ( boss.x - view_x + HWIDTH_VIEWPORT - 64 ) | 0, ( boss.y - view_y + HHEIGHT_VIEWPORT - 128 ) | 0, 128, 128 );
 				} else if( boss.dx > 0 ) {
-					ctx_game.drawImage( ASSET_DEERMONGER_R, frame_boss * 128, 0, 128, 128, ( boss.x - view_x + HWIDTH_VIEWPORT ) | 0, ( boss.y - view_y + HHEIGHT_VIEWPORT ) | 0, 128, 128 );
+					ctx_game.drawImage( ASSET_DEERMONGER_R, frame_boss * 128, 0, 128, 128, ( boss.x - view_x + HWIDTH_VIEWPORT - 64 ) | 0, ( boss.y - view_y + HHEIGHT_VIEWPORT - 128 ) | 0, 128, 128 );
 				} else if( boss.left ) {
-					ctx_game.drawImage( ASSET_DEERMONGER_L, frame_boss * 128, 0, 128, 128, ( boss.x - view_x + HWIDTH_VIEWPORT ) | 0, ( boss.y - view_y + HHEIGHT_VIEWPORT ) | 0, 128, 128 );
+					ctx_game.drawImage( ASSET_DEERMONGER_L, frame_boss * 128, 0, 128, 128, ( boss.x - view_x + HWIDTH_VIEWPORT - 64 ) | 0, ( boss.y - view_y + HHEIGHT_VIEWPORT - 128 ) | 0, 128, 128 );
 				} else {
-					ctx_game.drawImage( ASSET_DEERMONGER_R, frame_boss * 128, 0, 128, 128, ( boss.x - view_x + HWIDTH_VIEWPORT ) | 0, ( boss.y - view_y + HHEIGHT_VIEWPORT ) | 0, 128, 128 );
+					ctx_game.drawImage( ASSET_DEERMONGER_R, frame_boss * 128, 0, 128, 128, ( boss.x - view_x + HWIDTH_VIEWPORT - 64 ) | 0, ( boss.y - view_y + HHEIGHT_VIEWPORT - 128 ) | 0, 128, 128 );
 				}
 			}
 		}
@@ -631,6 +636,7 @@ function init_renderer() {
 	window.enable_view = enable_view;
 	window.set_viewpoint = set_viewpoint;
 	window.set_player_list = set_player_list;
+	window.set_render_projectiles = set_render_projectiles;
 }
 
 init_renderer();

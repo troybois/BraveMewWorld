@@ -428,6 +428,22 @@ function dm_init() {
 		this.left = true;
 	}
 
+	function Projectile() {
+		this.x = 0;
+		this.y = 0;
+		this.dx = 0;
+		this.dy = 0;
+		this.range = -1;
+		this.start_x = 0;
+		this.start_y = 0;
+		this.max_dx = .2;
+		this.accel = 0;
+		this.room = -1;
+		this.asset = null;
+		this.last_anim = -1;
+		this.frame = 0;
+	}
+
 	var DM_VELOCITY = .1,
 		DM_DIAG_VELOCITY = DM_VELOCITY / Math.sqrt( 2 );
 
@@ -509,12 +525,21 @@ function dm_init() {
 					player_list.push( 'y' );
 					pps[ 'y' ] = new Player( pos[ 0 ], pos[ 1 ] );
 				}
-				window.send( JSON.stringify( { action: 's', player_list : player_list, players : pps, boss : me } ) );
-				window.set_player_list( player_list );
-				window.set_render_players( pps );
+				projectiles[ "boss" ] = [];
+				for( j = 0; j < 25; ++j ) {
+					projectiles[ "boss" ].push( new Projectile() );
+				}
 				for( i = 0; i < player_list.length; ++i ) {
 					entities.push( pps[ player_list[ i ] ] );
+					projectiles[ player_list[ i ] ] = [];
+					for( j = 0; j < 25; ++j ) {
+						projectiles[ player_list[ i ] ].push( new Projectile() );
+					}
 				}
+				window.send( JSON.stringify( { action: 's', player_list : player_list, players : pps, boss : me, projectiles: projectiles } ) );
+				window.set_player_list( player_list );
+				window.set_render_players( pps );
+				window.set_render_projectiles( projectiles );
 				players = pps;
 				console.log( "whoops" )
 				game_started = true;
@@ -553,6 +578,36 @@ function dm_init() {
 							window.set_render_cooridor( cooridors[ tile - 1 - rooms.length ], tile );
 						}
 					}
+				}
+			}
+		}
+		for( i = 0; i < player_list.length; ++i ) {
+			for( j = 0; j < projectiles[ player_list[ i ] ]; ++j ) {
+				ent = projectiles[ player_list[ i ] ][ j ];
+				if( ent.room == -1 ) continue;
+				next_x = ent.x + ent.dx * ticks;
+				next_y = ent.y + ent.dy * ticks;
+				tile = get_tile( next_x, next_y );
+				if( tile > 0 ) {
+					ent.x = next_x;
+					ent.y = next_y;
+					if( tile != ent.room ) {
+						ent.room = -1;
+					}
+				}
+			}
+		}
+		for( j = 0; j < projectiles[ "boss" ]; ++j ) {
+			ent = projectiles[ player_list[ i ] ][ j ];
+			if( ent.room == -1 ) continue;
+			next_x = ent.x + ent.dx * ticks;
+			next_y = ent.y + ent.dy * ticks;
+			tile = get_tile( next_x, next_y );
+			if( tile > 0 ) {
+				ent.x = next_x;
+				ent.y = next_y;
+				if( tile != ent.room ) {
+					ent.room = -1;
 				}
 			}
 		}
@@ -637,6 +692,7 @@ function dm_init() {
 				//alert( "" );
 			} else {
 				window.send( value );
+				window.play_music();
 			}
 		}
 	}
