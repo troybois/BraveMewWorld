@@ -20,7 +20,7 @@ function dm_init() {
 	var CANVAS_CREATE = document.getElementById( "creator" ),
 		CANVAS_GAME = document.getElementById( "game" );
 
-	window.init_canvas_game( CANVAS_GAME, WIDTH_DG, HEIGHT_DG );
+	window.init_canvas_game( CANVAS_GAME );
 
 	CANVAS_CREATE.width = WIDTH_CREATE_CANVAS;
 	CANVAS_CREATE.height = HEIGHT_CREATE_CANVAS;
@@ -80,32 +80,71 @@ function dm_init() {
 	var down_backspace = false,
 		down_r = false,
 		down_c = false
-		down_enter = false;
+		down_enter = false,
+		down_left = false,
+		down_right = false,
+		down_up = false,
+		down_down = false,
+		down_w = false,
+		down_a = false,
+		down_s = false,
+		down_d = false,
+		typing = false;
 
 	function keyblade( code, pressed ) {
 		console.log( code );
+		var k = null;
 		switch( code ) {
 			case 8: //BACKSPACE
-				down_backspace = pressed;
+				down_backspace = ( k = pressed );
 				break;
 			case 13: // ENTER
-				down_enter = pressed;
+				down_enter = ( k = pressed );
 				break;
-			case 82: //R
-				down_r = pressed;
+			case 82: // R
+				down_r = ( k = pressed );
 				break;
-			case 67: //C
-				down_c = pressed;
+			case 67: // C
+				down_c = ( k = pressed );
 				break;
+			case 37: // LEFT
+				down_left = ( k = pressed );
+				break;
+			case 38: // UP
+				down_up = ( k = pressed );
+				break;
+			case 39: // RIGHT
+				down_right = ( k = pressed );
+				break;
+			case 40: // DOWN
+				down_down = ( k = pressed );
+				break;
+			case 87: // W
+				down_w = ( k = pressed );
+				break;
+			case 65: // A
+				down_a = ( k = pressed );
+				break;
+			case 68: // D
+				down_d = ( k = pressed );
+				break;
+			case 83: // S
+				down_s = ( k = pressed );
+				break;
+		}
+		if( k != null ) {
+			return true;
+		} else {
+			return false;
 		}
 	}
 
 	function handle_keyup( evt ) {
-		keyblade( evt.keyCode, false );
+		if( !typing && keyblade( evt.keyCode, false ) ) evt.preventDefault();
 	}
 
 	function handle_keydown( evt ) {
-		keyblade( evt.keyCode, true );
+		if( !typing && keyblade( evt.keyCode, true ) ) evt.preventDefault();
 	}
 
 	function create_loop( time ) {
@@ -220,10 +259,6 @@ function dm_init() {
 		}
 	}
 
-	function update( time ) {
-
-	}
-
 	CANVAS_CREATE.addEventListener( "mousemove", handle_mousemove_create );
 	CANVAS_CREATE.addEventListener( "mouseout", handle_mouseout_create );
 
@@ -324,7 +359,6 @@ function dm_init() {
 				}
 			}
 		}
-		console.log( JSON.stringify( game_data ) );
 		for( i = 0; i < cooridors.length; ++i ) {
 			cooridor = cooridors[ i ];
 			if( cooridor.vertical == null ) {
@@ -353,9 +387,103 @@ function dm_init() {
 		}
 		window.render_dg_rooms( rooms );
 		window.render_dg_cooridors( cooridors );
-		window.set_render_cooridor( cooridors[ 0 ] );
+		window.set_render_room( start_room );
+		me.x = start_room.x1 * SIZE_DG_TILE + ( ( Math.random() * ( start_room.x2 - start_room.x1 ) ) | 0 ) * SIZE_DG_TILE;
+		me.y = start_room.y1 * SIZE_DG_TILE + ( ( Math.random() * ( start_room.y2 - start_room.y1 ) ) | 0 ) * SIZE_DG_TILE;
 		SCREEN_JOIN.setAttribute( "class", "show" );
+		typing = true;
 		BUTTON_JOIN.addEventListener( "click", handle_button_join );
+	}
+
+	function Entity( x, y ) {
+		this.x = x;
+		this.y = y;
+		this.dx = 0;
+		this.dy = 0;
+		this.room = -1;
+	}
+
+	var DM_VELOCITY = .1,
+		DM_DIAG_VELOCITY = DM_VELOCITY / Math.sqrt( 2 );
+
+	var me = new Entity( 0, 0 ),
+		last_update = -1,
+		ticks,
+		entities = [],
+		game_started = false;
+
+	entities.push( me );
+
+	function get_tile( ent_x, ent_y ) {
+		var tx = ( ent_x / SIZE_DG_TILE ) | 0,
+			ty = ( ent_y / SIZE_DG_TILE	) | 0;
+
+		if( tx < 0 || tx >= TWIDTH_DG || ty < 0 || ty >= THEIGHT_DG ) {
+			return -1;
+		}
+
+		return tiles[ ty ][ tx ];
+	}
+
+	function is_room( tile ) {
+		return ( tile - 1 ) >= 0 && ( tile - 1 ) < rooms.length;
+	}
+
+	function update( time ) {
+		if( last_update == -1 ) last_update = time;
+		ticks = time - last_update;
+		me.dy = me.dx = 0;
+		if( down_up && !down_down ) {
+			me.dy = -DM_VELOCITY;
+		} else if( down_down && !down_up ) {
+			me.dy = DM_VELOCITY;
+		}
+		if( down_left && !down_right ) {
+			me.dx = -DM_VELOCITY;
+		} else if( down_right && !down_left ) {
+			me.dx = DM_VELOCITY;
+		}
+		if( down_enter ) {
+			if( !game_started ) {
+				window.send( JSON.stringify( { action: 's' } ) );
+				game_started = true;
+			}
+		}
+		if( me.dx != 0 && me.dy != 0 ) {
+			if( me.dx < 0 ) {
+				me.dx = -DM_DIAG_VELOCITY;
+			} else {
+				me.dx = DM_DIAG_VELOCITY;
+			}
+			if( me.dy < 0 ) {
+				me.dy = -DM_DIAG_VELOCITY;
+			} else {
+				me.dy = DM_DIAG_VELOCITY;
+			}
+		}
+		var ent, next_x, next_y, tile;
+		for( i = 0; i < entities.length; ++i ) {
+			ent = entities[ i ];
+			next_x = ent.x + ent.dx * ticks;
+			next_y = ent.y + ent.dy * ticks;
+			tile = get_tile( next_x, next_y );
+			if( tile > 0 ) {
+				ent.x = next_x;
+				ent.y = next_y;
+				if( tile != ent.room ) {
+					ent.room = tile;
+					if( ent == me ) {
+						if( is_room( tile ) ) {
+							window.set_render_room( rooms[ tile - 1 ] );
+						} else {
+							window.set_render_cooridor( cooridors[ tile - 1 - rooms.length ] );
+						}
+					}
+				}
+			}
+		}
+		window.set_viewpoint( me.x, me.y );
+		last_update	= time;
 	}
 
 	var INPUT_ROOM = document.getElementById( "roomInput" );
@@ -391,7 +519,9 @@ function dm_init() {
 						window.set_loop( update );
 						joined = true;
 						SCREEN_JOIN.setAttribute( "class", "hide" );
+						typing = false;
 						SCREEN_GAME.setAttribute( "class", "show" );
+						window.enable_view();
 						break;
 				}
 			}

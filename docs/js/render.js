@@ -30,7 +30,9 @@ function init_renderer() {
 		OFFSET_DG_Y = 5 * SIZE_DG_TILE,
 		TWIDTH_VIEWPORT = 32,
 		WIDTH_VIEWPORT = SIZE_DG_TILE * TWIDTH_VIEWPORT,
-		HEIGHT_VIEWPORT = ( window.screen.height * ( WIDTH_VIEWPORT / window.screen.width ) ) | 0;
+		HWIDTH_VIEWPORT = ( WIDTH_VIEWPORT >> 1 ) | 0;
+		HEIGHT_VIEWPORT = ( window.screen.height * ( WIDTH_VIEWPORT / window.screen.width ) ) | 0,
+		HHEIGHT_VIEWPORT = ( HEIGHT_VIEWPORT >> 1 ) | 0;
 
 	var assets = [ ASSET_CORNER_E, ASSET_CORNER_W, ASSET_DOOR_CLOSED, ASSET_DOOR_OPEN, ASSET_EXIT_E, ASSET_EXIT_W, ASSET_FLOOR_1, ASSET_FLOOR_2, ASSET_LIGHT_E, ASSET_LIGHT_N, ASSET_LIGHT_S, ASSET_LIGHT_W, ASSET_SHADOW_E, ASSET_SHADOW_N, ASSET_SHADOW_W, ASSET_WALL_1, ASSET_WALL_2, ASSET_WALL_CORNER_E, ASSET_WALL_CORNER_W, ASSET_WALL_E, ASSET_WALL_S, ASSET_WALL_W ];
 
@@ -65,8 +67,8 @@ function init_renderer() {
 		loop = null,
 		width_dg,
 		height_dg,
-		view_x,
-		view_y,
+		view_x = 0,
+		view_y = 0,
 		x,
 		y,
 		i,
@@ -276,12 +278,18 @@ function init_renderer() {
 			window.send( "ping" );
 		}
 		if( loop != null ) {
-			loop();
+			loop( time );
 		}
 		if( view_update ) {
-			
+			ctx_game.clearRect( 0, 0, WIDTH_VIEWPORT, HEIGHT_VIEWPORT );
+			ctx_game.drawImage( CANVAS_ROOM, OFFSET_DG_X + view_x - HWIDTH_VIEWPORT, OFFSET_DG_Y + view_y - HHEIGHT_VIEWPORT, WIDTH_VIEWPORT, HEIGHT_VIEWPORT, 0, 0, WIDTH_VIEWPORT, HEIGHT_VIEWPORT );
 		}
 		window.requestAnimationFrame( render_loop );
+	}
+
+	function set_viewpoint( vx, vy ) {
+		view_x = vx | 0;
+		view_y = vy | 0;
 	}
 
 	window.requestAnimationFrame( render_loop );
@@ -294,6 +302,8 @@ function init_renderer() {
 	window.render_dg_cooridors = render_dg_cooridors;
 	window.set_render_room = set_render_room;
 	window.set_render_cooridor = set_render_cooridor;
+	window.enable_view = enable_view;
+	window.set_viewpoint = set_viewpoint;
 }
 
 init_renderer();
