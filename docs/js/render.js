@@ -95,7 +95,9 @@ function init_renderer() {
 		HWIDTH_VIEWPORT = ( WIDTH_VIEWPORT >> 1 ) | 0;
 		HEIGHT_VIEWPORT = ( window.screen.height * ( WIDTH_VIEWPORT / window.screen.width ) ) | 0,
 		HHEIGHT_VIEWPORT = ( HEIGHT_VIEWPORT >> 1 ) | 0,
-		TICKS_IDLE = 200;
+		TICKS_IDLE = 200,
+		TICKS_MOVE = 100,
+		TICKS_BOSS = 200;
 
 	var assets = [ ASSET_CORNER_E, ASSET_CORNER_W, ASSET_DOOR_CLOSED, ASSET_DOOR_OPEN, ASSET_EXIT_E, ASSET_EXIT_W, ASSET_FLOOR_1, ASSET_FLOOR_2, ASSET_LIGHT_E, ASSET_LIGHT_N, ASSET_LIGHT_S, ASSET_LIGHT_W, ASSET_SHADOW_E, ASSET_SHADOW_N, ASSET_SHADOW_W, ASSET_WALL_1, ASSET_WALL_2, ASSET_WALL_CORNER_E, ASSET_WALL_CORNER_W, ASSET_WALL_E, ASSET_WALL_S, ASSET_WALL_W ];
 
@@ -190,7 +192,19 @@ function init_renderer() {
 	ASSET_DEERMONGER_R.src = "assets/deermonger_right.png";
 	ASSET_DEERMONGER_L.src = "assets/deermonger_left.png";
 
+	var TIMING = [ TICKS_IDLE, TICKS_MOVE ];
+
+	function Update( il, ir, ml, mr ) {
+		this.last_anim = -1;
+		this.frame = 0;
+		this.idle = [ il, ir ];
+		this.move = [ ml, mr ];
+	}
+
 	var game_started = false,
+		player_list = [],
+		players,
+		updates = {},
 		ctx_dg,
 		ctx_game,
 		ctx_room,
@@ -205,6 +219,7 @@ function init_renderer() {
 		ctx_p,
 		ctx_r,
 		ctx_y,
+		boss,
 		bgpry_mode = false,
 		running = -1,
 		loop = null,
@@ -212,6 +227,7 @@ function init_renderer() {
 		height_dg,
 		view_x = 0,
 		view_y = 0,
+		curr_tile = -1,
 		x,
 		y,
 		i,
@@ -262,6 +278,29 @@ function init_renderer() {
 		ctx_y = canvas_y.getContext( "2d" );
 	}
 
+	function set_player_list( l ) {
+		player_list = l;
+		for( i = 0; i < player_list.length; ++i ) {
+			switch( player_list[ i ] ) {
+				case 'b':
+					updates[ 'b' ] = new Update( ASSET_B_IDLE_L, ASSET_B_IDLE_R, ASSET_B_MOVE_L, ASSET_B_MOVE_R );
+					break;
+				case 'g':
+					updates[ 'g' ] = new Update( ASSET_G_IDLE_L, ASSET_G_IDLE_R, ASSET_G_MOVE_L, ASSET_G_MOVE_R );
+					break;
+				case 'p':
+					updates[ 'p' ] = new Update( ASSET_P_IDLE_L, ASSET_P_IDLE_R, ASSET_P_MOVE_L, ASSET_P_MOVE_R );
+					break;
+				case 'r':
+					updates[ 'r' ] = new Update( ASSET_R_IDLE_L, ASSET_R_IDLE_R, ASSET_R_MOVE_L, ASSET_R_MOVE_R );
+					break;
+				case 'y':
+					updates[ 'y' ] = new Update( ASSET_Y_IDLE_L, ASSET_Y_IDLE_R, ASSET_Y_MOVE_L, ASSET_Y_MOVE_R );
+					break;
+			}
+		}
+	}
+
 	function set_bgpry( mode, sel ) {
 		bgpry_mode = mode;
 		running = sel;
@@ -277,7 +316,8 @@ function init_renderer() {
 		}
 	}
 
-	function set_render_room( room ) {
+	function set_render_room( room, tt ) {
+		curr_tile = tt;
 		ctx_room.drawImage( CANVAS_DG, 0, 0 );
 		ctx_room.fillStyle = "#000000";
 		ctx_room.fillRect( 0, 0, width_dg, OFFSET_DG_Y + room.y1 * SIZE_DG_TILE );
@@ -287,7 +327,7 @@ function init_renderer() {
 		for( y = room.y1 - 4; y <= room.y2; ++y ) {
 			if( y == room.y1 - 4 ) {
 				for( x = room.x1; x <= room.x2; ++x ) {
-					ctx_room.drawImage( ASSET_WALL_1, OFFSET_DG_X + x * SIZE_DG_TILE, OFFSET_DG_Y + y * SIZE_DG_TILE );
+					ctx_room.drawImage( ( ( Math.random() * 2 ) | 0 ) == 0 ? ASSET_WALL_1 : ASSET_WALL_2, OFFSET_DG_X + x * SIZE_DG_TILE, OFFSET_DG_Y + y * SIZE_DG_TILE );
 				}
 			} else if( y == room.y2 ) {
 				for( x = room.x1; x <= room.x2; ++x ) {
@@ -302,7 +342,8 @@ function init_renderer() {
 		render_room_doors( room );
 	}
 
-	function set_render_cooridor( cooridor ) {
+	function set_render_cooridor( cooridor, tt ) {
+		curr_tile = tt;
 		ctx_room.drawImage( CANVAS_DG, 0, 0 );
 		ctx_room.fillStyle = "#000000";
 		ctx_room.fillRect( 0, 0, width_dg, OFFSET_DG_Y + cooridor.y1 * SIZE_DG_TILE );
@@ -331,6 +372,14 @@ function init_renderer() {
 
 	function get_canvas_dg() {
 		return CANVAS_ROOM;
+	}
+
+	function set_render_players( pll ) {
+		players = pll;
+	}
+
+	function set_render_boss( b ) {
+		boss = b;
 	}
 
 	function render_dg_rooms( rooms ) {
@@ -441,7 +490,11 @@ function init_renderer() {
 		frame_g = 0,
 		frame_p = 0,
 		frame_r = 0,
-		frame_y = 0;
+		frame_y = 0,
+		time_last_boss = -1,
+		frame_boss = 0;
+
+
 	var view_update = false;
 
 	function set_loop( f ) {
@@ -502,6 +555,56 @@ function init_renderer() {
 		if( view_update ) {
 			ctx_game.clearRect( 0, 0, WIDTH_VIEWPORT, HEIGHT_VIEWPORT );
 			ctx_game.drawImage( CANVAS_ROOM, OFFSET_DG_X + view_x - HWIDTH_VIEWPORT, OFFSET_DG_Y + view_y - HHEIGHT_VIEWPORT, WIDTH_VIEWPORT, HEIGHT_VIEWPORT, 0, 0, WIDTH_VIEWPORT, HEIGHT_VIEWPORT );
+			var iddd, upd, pll, ass, tim, frm;
+			if( time_last_boss == -1 ) time_last_boss = time;
+			if( time - time_last_boss > TICKS_BOSS ) {
+				frame_boss = ( frame_boss + 1 ) % 6;
+				time_last_boss = time;
+			}
+			for( i = 0; i < player_list.length; ++i ) {
+				iddd = player_list[ i ];
+				upd = updates[ iddd ];
+				pll = players[ iddd ];
+				if( pll.room != curr_tile ) continue;
+				if( pll.dx != 0 || pll.dy != 0 ) {
+					if( pll.dx < 0 ) {
+						ass = upd.move[ 0 ];
+					} else if( pll.dx > 0 ) {
+						ass = upd.move[ 1 ];
+					} else if( pll.left ) {
+						ass = upd.move[ 0 ];
+					} else {
+						ass = upd.move[ 1 ];
+					}
+					tim = TIMING[ 1 ];
+					frm = 6;
+				} else {
+					if( pll.left ) {
+						ass = upd.idle[ 0 ];
+					} else {
+						ass = upd.idle[ 1 ];
+					}
+					tim = TIMING[ 0 ];
+					frm = 4;
+				}
+				if( upd.last_anim == -1 ) upd.last_anim = time;
+				if( time - upd.last_anim > tim ) {
+					upd.frame = ( upd.frame + 1 ) % frm;
+					upd.last_anim = time;
+				}
+				ctx_game.drawImage( ass, upd.frame * 32, 0, 32, 32, ( pll.x - view_x + HWIDTH_VIEWPORT ) | 0, ( pll.y - view_y + HHEIGHT_VIEWPORT ) | 0, 32, 32 );
+			}
+			if( boss.room == curr_tile ) {
+				if( boss.dx < 0 ) {
+					ctx_game.drawImage( ASSET_DEERMONGER_L, frame_boss * 128, 0, 128, 128, ( boss.x - view_x + HWIDTH_VIEWPORT ) | 0, ( boss.y - view_y + HHEIGHT_VIEWPORT ) | 0, 128, 128 );
+				} else if( boss.dx > 0 ) {
+					ctx_game.drawImage( ASSET_DEERMONGER_R, frame_boss * 128, 0, 128, 128, ( boss.x - view_x + HWIDTH_VIEWPORT ) | 0, ( boss.y - view_y + HHEIGHT_VIEWPORT ) | 0, 128, 128 );
+				} else if( boss.left ) {
+					ctx_game.drawImage( ASSET_DEERMONGER_L, frame_boss * 128, 0, 128, 128, ( boss.x - view_x + HWIDTH_VIEWPORT ) | 0, ( boss.y - view_y + HHEIGHT_VIEWPORT ) | 0, 128, 128 );
+				} else {
+					ctx_game.drawImage( ASSET_DEERMONGER_R, frame_boss * 128, 0, 128, 128, ( boss.x - view_x + HWIDTH_VIEWPORT ) | 0, ( boss.y - view_y + HHEIGHT_VIEWPORT ) | 0, 128, 128 );
+				}
+			}
 		}
 		window.requestAnimationFrame( render_loop );
 	}
@@ -521,10 +624,13 @@ function init_renderer() {
 	window.get_canvas_dg = get_canvas_dg;
 	window.render_dg_rooms = render_dg_rooms;
 	window.render_dg_cooridors = render_dg_cooridors;
+	window.set_render_players = set_render_players;
 	window.set_render_room = set_render_room;
 	window.set_render_cooridor = set_render_cooridor;
+	window.set_render_boss = set_render_boss;
 	window.enable_view = enable_view;
 	window.set_viewpoint = set_viewpoint;
+	window.set_player_list = set_player_list;
 }
 
 init_renderer();

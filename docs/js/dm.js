@@ -315,6 +315,11 @@ function dm_init() {
 		tiles.push( row );
 	}
 
+	function start_pos() {
+		return [ start_room.x1 * SIZE_DG_TILE + ( ( Math.random() * ( start_room.x2 - start_room.x1 ) ) | 0 ) * SIZE_DG_TILE,
+			start_room.y1 * SIZE_DG_TILE + ( ( Math.random() * ( start_room.y2 - start_room.y1 ) ) | 0 ) * SIZE_DG_TILE ];
+	}
+
 	function parse_actions() {
 		game_data[ "action" ] = 'd';
 		game_data[ "start_x1" ] = start_x1; 
@@ -389,8 +394,9 @@ function dm_init() {
 		window.render_dg_rooms( rooms );
 		window.render_dg_cooridors( cooridors );
 		window.set_render_room( start_room );
-		me.x = start_room.x1 * SIZE_DG_TILE + ( ( Math.random() * ( start_room.x2 - start_room.x1 ) ) | 0 ) * SIZE_DG_TILE;
-		me.y = start_room.y1 * SIZE_DG_TILE + ( ( Math.random() * ( start_room.y2 - start_room.y1 ) ) | 0 ) * SIZE_DG_TILE;
+		var pos = start_pos();
+		me.x = pos[ 0 ];
+		me.y = pos[ 1 ];
 		SCREEN_JOIN.setAttribute( "class", "show" );
 		typing = true;
 		BUTTON_JOIN.addEventListener( "click", handle_button_join );
@@ -404,15 +410,37 @@ function dm_init() {
 		this.room = -1;
 	}
 
+	function Boss( x, y ) {
+		this.x = x;
+		this.y = y;
+		this.dx = 0;
+		this.dy = 0;
+		this.room = -1;
+		this.left = true;
+	}
+
+	function Player( x, y ) {
+		this.x = x;
+		this.y = y;
+		this.dx = 0;
+		this.dy = 0;
+		this.room = -1;
+		this.left = true;
+	}
+
 	var DM_VELOCITY = .1,
 		DM_DIAG_VELOCITY = DM_VELOCITY / Math.sqrt( 2 );
 
-	var me = new Entity( 0, 0 ),
+	var me = new Boss( 0, 0 ),
 		last_update = -1,
+		last_dx = 0,
+		last_dy = 0,
 		ticks,
 		entities = [],
 		game_started = false,
-		players = {};
+		players = {},
+		projectiles = {},
+		player_list = [];
 
 	players[ "b" ] = false;
 	players[ "g" ] = false;
@@ -448,12 +476,46 @@ function dm_init() {
 		}
 		if( down_left && !down_right ) {
 			me.dx = -DM_VELOCITY;
+			me.left = true;
 		} else if( down_right && !down_left ) {
 			me.dx = DM_VELOCITY;
+			me.left = false;
 		}
 		if( down_enter ) {
 			if( !game_started ) {
-				window.send( JSON.stringify( { action: 's' } ) );
+				var pps = {}, pos;
+				if( players[ 'b' ] ) {
+					pos = start_pos();
+					player_list.push( 'b' );
+					pps[ 'b' ] = new Player( pos[ 0 ], pos[ 1 ] );
+				}
+				if( players[ 'g' ] ) {
+					pos = start_pos();
+					player_list.push( 'g' );
+					pps[ 'g' ] = new Player( pos[ 0 ], pos[ 1 ] );
+				}
+				if( players[ 'p' ] ) {
+					pos = start_pos();
+					player_list.push( 'p' );
+					pps[ 'p' ] = new Player( pos[ 0 ], pos[ 1 ] );
+				}
+				if( players[ 'r' ] ) {
+					pos = start_pos();
+					player_list.push( 'r' );
+					pps[ 'r' ] = new Player( pos[ 0 ], pos[ 1 ] );
+				}
+				if( players[ 'y' ] ) {
+					pos = start_pos();
+					player_list.push( 'y' );
+					pps[ 'y' ] = new Player( pos[ 0 ], pos[ 1 ] );
+				}
+				window.send( JSON.stringify( { action: 's', player_list : player_list, players : pps, boss : me } ) );
+				window.set_player_list( player_list );
+				window.set_render_players( pps );
+				for( i = 0; i < player_list.length; ++i ) {
+					entities.push( pps[ player_list[ i ] ] );
+				}
+				players = pps;
 				console.log( "whoops" )
 				game_started = true;
 			}
@@ -470,6 +532,9 @@ function dm_init() {
 				me.dy = DM_DIAG_VELOCITY;
 			}
 		}
+		if( me.dx != last_dx || me.dy != last_dy ) {
+			window.send( JSON.stringify( { action : 'b', data : me } ) );
+		}
 		var ent, next_x, next_y, tile;
 		for( i = 0; i < entities.length; ++i ) {
 			ent = entities[ i ];
@@ -483,9 +548,9 @@ function dm_init() {
 					ent.room = tile;
 					if( ent == me ) {
 						if( is_room( tile ) ) {
-							window.set_render_room( rooms[ tile - 1 ] );
+							window.set_render_room( rooms[ tile - 1 ], tile );
 						} else {
-							window.set_render_cooridor( cooridors[ tile - 1 - rooms.length ] );
+							window.set_render_cooridor( cooridors[ tile - 1 - rooms.length ], tile );
 						}
 					}
 				}
@@ -493,6 +558,8 @@ function dm_init() {
 		}
 		window.set_viewpoint( me.x, me.y );
 		last_update	= time;
+		last_dx = me.dx;
+		last_dy = me.dy;
 	}
 
 	var INPUT_ROOM = document.getElementById( "roomInput" );
@@ -529,6 +596,14 @@ function dm_init() {
 							window.send( JSON.stringify( { action : 'a', assign : 'n', old : obj_data.old } ) );
 						}
 						break;
+					case 'p':
+						players[ obj_data.player ].x = obj_data.data.x;
+						players[ obj_data.player ].y = obj_data.data.y;
+						players[ obj_data.player ].dx = obj_data.data.dx;
+						players[ obj_data.player ].dy = obj_data.data.dy;
+						players[ obj_data.player ].room = obj_data.data.room;
+						players[ obj_data.player ].left = obj_data.data.left;
+						break;
 				}
 			}
 		} else {
@@ -538,6 +613,7 @@ function dm_init() {
 				switch( num ) {
 					case 0:
 						window.set_loop( update );
+						window.set_render_boss( me );
 						joined = true;
 						SCREEN_JOIN.setAttribute( "class", "hide" );
 						typing = false;

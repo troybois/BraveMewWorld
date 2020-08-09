@@ -146,16 +146,18 @@ function player_init() {
 		this.room = -1;
 	}
 
-	var DM_VELOCITY = .1,
+	var DM_VELOCITY = .12,
 		DM_DIAG_VELOCITY = DM_VELOCITY / Math.sqrt( 2 );
 
-	var me = new Entity( 0, 0 ),
-		last_update = -1,
+	var last_update = -1,
 		ticks,
 		entities = [],
-		game_started = false;
-
-	entities.push( me );
+		player_list = null,
+		game_started = false,
+		last_dx = 0,
+		last_dy = 0,
+		me,
+		boss;
 
 	function get_tile( ent_x, ent_y ) {
 		var tx = ( ent_x / SIZE_DG_TILE ) | 0,
@@ -183,8 +185,10 @@ function player_init() {
 		}
 		if( down_left && !down_right ) {
 			me.dx = -DM_VELOCITY;
+			me.left = true;
 		} else if( down_right && !down_left ) {
 			me.dx = DM_VELOCITY;
+			me.left = false;
 		}
 		if( me.dx != 0 && me.dy != 0 ) {
 			if( me.dx < 0 ) {
@@ -199,6 +203,9 @@ function player_init() {
 			}
 		}
 		var ent, next_x, next_y, tile;
+		if( me.dy != last_dy || me.dx != last_dx ) {
+			window.send( JSON.stringify( { action : 'p', player : selected, data : me } ) );
+		}
 		for( i = 0; i < entities.length; ++i ) {
 			ent = entities[ i ];
 			next_x = ent.x + ent.dx * ticks;
@@ -211,16 +218,19 @@ function player_init() {
 					ent.room = tile;
 					if( ent == me ) {
 						if( is_room( tile ) ) {
-							window.set_render_room( rooms[ tile - 1 ] );
+							window.set_render_room( rooms[ tile - 1 ], tile );
 						} else {
-							window.set_render_cooridor( cooridors[ tile - 1 - rooms.length ] );
+							window.set_render_cooridor( cooridors[ tile - 1 - rooms.length ], tile );
 						}
 					}
 				}
 			}
 		}
+		window.set_render_players( players );
 		window.set_viewpoint( me.x, me.y );
 		last_update	= time;
+		last_dx = me.dx;
+		last_dy = me.dy;
 	}
 
 	function parse_data( obj_data ) {
@@ -247,8 +257,6 @@ function player_init() {
 				}
 			}
 		}
-		me.x = start_room.x1 * SIZE_DG_TILE + ( ( Math.random() * ( start_room.x2 - start_room.x1 ) ) | 0 ) * SIZE_DG_TILE;
-		me.y = start_room.y1 * SIZE_DG_TILE + ( ( Math.random() * ( start_room.y2 - start_room.y1 ) ) | 0 ) * SIZE_DG_TILE;
 		window.set_render_room( start_room );
 	}
 
@@ -299,6 +307,16 @@ function player_init() {
 						SCREEN_GAME.setAttribute( "class", "show" );
 						window.set_bgpry( false, -1 );
 						window.enable_view();
+						players = obj_data.players;
+						me = players[ selected ];
+						for( i = 0; i < obj_data.player_list.length; ++i ) {
+							entities.push( players[ obj_data.player_list[ i ] ] );
+						}
+						player_list = obj_data.player_list;
+						boss = obj_data.boss;
+						entities.push( boss );
+						window.set_render_boss( boss );
+						window.set_player_list( player_list );
 						window.set_loop( update );
 						CLASS_B.removeEventListener( "click", handle_b );
 						CLASS_G.removeEventListener( "click", handle_g );
@@ -335,6 +353,22 @@ function player_init() {
 									break;
 							}
 						}
+						break;
+					case 'b':
+						boss.x = obj_data.data.x;
+						boss.y = obj_data.data.y;
+						boss.dx = obj_data.data.dx;
+						boss.dy = obj_data.data.dy;
+						boss.room = obj_data.data.room;
+						boss.left = obj_data.data.left;
+						break;
+					case 'p':
+						players[ obj_data.player ].x = obj_data.data.x;
+						players[ obj_data.player ].y = obj_data.data.y;
+						players[ obj_data.player ].dx = obj_data.data.dx;
+						players[ obj_data.player ].dy = obj_data.data.dy;
+						players[ obj_data.player ].room = obj_data.data.room;
+						players[ obj_data.player ].left = obj_data.data.left;
 						break;
 				}
 			}
