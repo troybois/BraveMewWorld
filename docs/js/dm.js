@@ -335,6 +335,7 @@ function dm_init() {
 		}
 		window.render_dg_rooms( rooms );
 		window.render_dg_cooridors( cooridors );
+		window.set_render_room( start_room );
 		SCREEN_JOIN.setAttribute( "class", "show" );
 		BUTTON_JOIN.addEventListener( "click", handle_button_join );
 	}
