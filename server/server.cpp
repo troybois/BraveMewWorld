@@ -4,7 +4,7 @@ using namespace std;
 
 us_listen_socket_t* listener;
 
-BMWRoom** rooms = ( BMWRoom** ) malloc( sizeof( BMWRoom* ) * ROOM_COUNT );
+BMWRoom** rooms = new BMWRoom*[ ROOM_COUNT ];
 
 void init_rooms() {
 	for( int i = 0; i < ROOM_COUNT; ++i ) {
@@ -18,7 +18,7 @@ BMWRoom* get_room( BMWRoom** room, string name, bool host ) {
 	        n = new BMWRoom;
 		if( !n ) return 0;
 		n->name = name;
-		n->clients = ( void** ) malloc( sizeof( BMWClient* ) * MAX_PLAYERS );
+		n->clients = ( void** ) ( new BMWClient*[ MAX_PLAYERS ] );
 		if( !n->clients ) return 0;
 		for( int i = 0; i < MAX_PLAYERS; ++i ) {
 			*( n->clients + i ) = 0;
@@ -34,9 +34,9 @@ BMWRoom* get_room( BMWRoom** room, string name, bool host ) {
 		BMWRoom* p = *room;
 		if( p->name == name ) {
 			if( n ) {
-				free( n->clients );
+				delete[] n->clients;
 				n->clients = 0;
-				free( n );
+				delete n;
 			}
 			return p;
 		}
@@ -45,9 +45,9 @@ BMWRoom* get_room( BMWRoom** room, string name, bool host ) {
 			p = p->next;
 			if( p->name == name ) {
 				if( n ) {
-					free( n->clients );
+					delete[] n->clients;
 					n->clients = 0;
-					free( n );
+					delete n;
 				}
 				return p;
 			}
@@ -90,9 +90,12 @@ void broadcast( uWS::WebSocket<false, true>* ws, string msg ) {
 	BMWRoom* room = client->room;
 	for( int i = 0; i < MAX_PLAYERS; ++i ) {
 		c = ( BMWClient* ) *( room->clients + i );
-		if( c != client ) {
+		if( c && c != client ) {
 			send( c->ws, msg );
 		}
+	}
+	if( client != room->host ) {
+		send( ( ( BMWClient* ) ( room->host ) )->ws, msg );
 	}
 }
 
@@ -170,6 +173,6 @@ int main() {
 			cout << "Listening on port " << 25565 << endl;
 		}
 	} ).run();
-	free( rooms );
+	delete[] rooms;
 	return 0;
 }
