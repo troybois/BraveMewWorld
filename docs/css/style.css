@@ -1,0 +1,77 @@
+
+@font-face {
+	font-family: "zelda";
+	src: url("../assets/fonts/The Wild Breath of Zelda.otf");
+}
+
+#landing {
+	width: 100vw;
+	height: 100vh;
+	position: fixed;
+	-ms-interpolation-mode: nearest-neighbor;
+	image-rendering: -webkit-optimize-contrast;
+	image-rendering: optimizeSpeed;
+	image-rendering: -o-crisp-edges;
+	image-rendering: -moz-crisp-edges;	
+	image-rendering: pixelated;
+
+}
+
+#gridContainer {
+	position: fixed;
+	display: grid;
+	width: 100vw;
+	height: 100vh;
+	grid-template-columns: 3fr 2fr 1fr 2fr 3fr;
+	grid-template-rows: 35% 10% auto;
+}
+
+#hostGameButton {
+	grid-column-start: 2;
+	grid-row-start: 2;
+	background-color: #9f2f4d;
+
+}
+
+#joinGameButton {
+	grid-column-start: 4;
+	grid-row-start: 2;
+	background-color: #404fae;
+}
+
+.gameButton {
+	width: 100%;
+	height: 100%;
+	border-radius: 25px;
+	text-align: center;
+}
+
+#gameTitle {
+	font-family: "zelda";
+	place-self: center;
+	grid-area: 1 / 1 / 2 / 6;
+	font-size: 10vw;
+	color: white;
+	-webkit-text-stroke-width: 5px;
+    -webkit-text-stroke-color: #333;
+}
+
+a {
+	color: white;
+	text-decoration-line: none;
+	font-family: "zelda";
+	font-size: 3vw;
+	position: relative;
+	top: 23%;
+	display: block;
+	/*width: 100%;
+	height: 100%;
+	border-radius: 25px;*/
+}
+
+.gameButton:hover {
+	border-style: solid;
+	border-color: white;
+	border-width: 5px;
+}
+
