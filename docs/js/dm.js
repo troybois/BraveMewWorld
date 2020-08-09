@@ -250,6 +250,8 @@ function dm_init() {
 		this.y1 = y1;
 		this.x2 = x2;
 		this.y2 = y2;
+		this.cleared = false;
+		this.active = false;
 		this.doors = [];
 	}
 
@@ -335,6 +337,7 @@ function dm_init() {
 		}
 		window.render_dg_rooms( rooms );
 		window.render_dg_cooridors( cooridors );
+		window.set_render_cooridor( cooridors[ 0 ] );
 		SCREEN_JOIN.setAttribute( "class", "show" );
 		BUTTON_JOIN.addEventListener( "click", handle_button_join );
 	}

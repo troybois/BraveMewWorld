@@ -8,7 +8,9 @@ function prng(rngType, range, seed) {
 	}
 	switch(rngType) {
 		case "modular":
+
 			PRNG_VARS["x"] = (7901 * PRNG_VARS.x + 9467)%(177013);
+
 			return PRNG_VARS.x % PRNG_VARS.a;
 	}
 }
