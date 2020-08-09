@@ -94,6 +94,16 @@ function init_renderer() {
 		ctx_game = canvas_game.getContext( "2d" );
 	}
 
+	function render_room_doors( room ) {
+		var door;
+		for( i = 0; i < room.doors.length; ++i ) {
+			door = room.doors[ i ];
+			if( door.direction == 'n' ) {
+				ctx_room.drawImage( ASSET_DOOR_CLOSED, OFFSET_DG_X + door.offset * SIZE_DG_TILE, OFFSET_DG_Y + ( room.y1 - 2 ) * SIZE_DG_TILE );
+			}
+		}
+	}
+
 	function set_render_room( room ) {
 		ctx_room.drawImage( CANVAS_DG, 0, 0 );
 		ctx_room.fillStyle = "#000000";
@@ -116,10 +126,34 @@ function init_renderer() {
 			ctx_room.drawImage( ASSET_WALL_W, OFFSET_DG_X + ( room.x1 - 1 ) * SIZE_DG_TILE, OFFSET_DG_Y + y * SIZE_DG_TILE );
 			ctx_room.drawImage( ASSET_WALL_E, OFFSET_DG_X + ( room.x2 + 1 ) * SIZE_DG_TILE, OFFSET_DG_Y + y * SIZE_DG_TILE );
 		}
+		render_room_doors( room );
 	}
 
-	function set_render_cooridor( cooridor	) {
+	function set_render_cooridor( cooridor ) {
 		ctx_room.drawImage( CANVAS_DG, 0, 0 );
+		ctx_room.fillStyle = "#000000";
+		ctx_room.fillRect( 0, 0, width_dg, OFFSET_DG_Y + cooridor.y1 * SIZE_DG_TILE );
+		ctx_room.fillRect( 0, 0, OFFSET_DG_X + cooridor.x1 * SIZE_DG_TILE, height_dg );
+		ctx_room.fillRect( 0, OFFSET_DG_Y + ( cooridor.y2 + 1 ) * SIZE_DG_TILE, width_dg, height_dg - ( ( cooridor.y2 + 1 ) * SIZE_DG_TILE ) );
+		ctx_room.fillRect( OFFSET_DG_X + ( cooridor.x2 + 1 ) * SIZE_DG_TILE, 0, width_dg - ( ( cooridor.x2 + 1 ) * SIZE_DG_TILE ), height_dg );
+		for( y = cooridor.y1 - 4; y <= cooridor.y2; ++y ) {
+			if( y == cooridor.y1 - 4 ) {
+				for( x = cooridor.x1; x <= cooridor.x2; ++x ) {
+					ctx_room.drawImage( ASSET_WALL_1, OFFSET_DG_X + x * SIZE_DG_TILE, OFFSET_DG_Y + y * SIZE_DG_TILE );
+				}
+			} else if( y == cooridor.y2 ) {
+				for( x = cooridor.x1; x <= cooridor.x2; ++x ) {
+					ctx_room.drawImage( ASSET_WALL_S, OFFSET_DG_X + x * SIZE_DG_TILE, OFFSET_DG_Y + ( y + 1 ) * SIZE_DG_TILE );
+				}
+				ctx_room.drawImage( ASSET_CORNER_W, OFFSET_DG_X + ( cooridor.x1 - 1 ) * SIZE_DG_TILE, OFFSET_DG_Y + ( y + 1 ) * SIZE_DG_TILE );
+				ctx_room.drawImage( ASSET_CORNER_E, OFFSET_DG_X + ( cooridor.x2 + 1 ) * SIZE_DG_TILE, OFFSET_DG_Y + ( y + 1 ) * SIZE_DG_TILE );
+			}
+			ctx_room.drawImage( ASSET_WALL_W, OFFSET_DG_X + ( cooridor.x1 - 1 ) * SIZE_DG_TILE, OFFSET_DG_Y + y * SIZE_DG_TILE );
+			ctx_room.drawImage( ASSET_WALL_E, OFFSET_DG_X + ( cooridor.x2 + 1 ) * SIZE_DG_TILE, OFFSET_DG_Y + y * SIZE_DG_TILE );
+		}
+		if( cooridor.vertical ) {
+			ctx_room.drawImage( ASSET_DOOR_OPEN, OFFSET_DG_X + ( cooridor.x1 + 1 ) * SIZE_DG_TILE, OFFSET_DG_Y + ( cooridor.y1 - 2 ) * SIZE_DG_TILE );
+		}
 	}
 
 	function get_canvas_dg() {
