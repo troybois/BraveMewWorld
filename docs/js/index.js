@@ -33,7 +33,7 @@ function loadAssets() {
 	var floor2 = new Image();
 	wall1.src = "../assets/wall_1.png";
 	wall2.src = "../assets/wall_2.png";
-	pibImg.src = "../assets/pib_idle_spritesheet_right.png";
+	pibImg.src = "../assets/pib_idle_b_right.png";
 	floor1.src = "../assets/floor_1.png";
 	floor2.src = "../assets/floor_2.png";
 	var assets = {
