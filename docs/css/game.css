@@ -5,6 +5,46 @@ body, html {
 	width: 100vw;
 }
 
+#classY {
+	background-color: #faf82b;
+}
+
+#classY:hover, #classY.chosen {
+	background-color: #f5ff98;
+}
+
+#classR {
+	background-color: #de1a00;
+}
+
+#classR:hover, #classR.chosen {
+	background-color: #ff7d19;
+}
+
+#classP {
+	background-color: #683ccb;
+}
+
+#classP:hover, #classP.chosen {
+	background-color: #d4a3f4;
+}
+
+#classG {
+	background-color: #2db317;
+}
+
+#classG:hover, #classG.chosen {
+	background-color: #cded6a;
+}
+
+#classB {
+	background-color: #3391d5;
+}
+
+#classB:hover, #classB.chosen {
+	background-color: #7dede2;
+}
+
 #game {
 	height: 100%;
 	width: 100%;
@@ -31,4 +71,28 @@ body, html {
 	display: block!important;
 	height: 100%;
 	width: 100%;
+}
+
+.class {
+	float: left;
+	display: block;
+	width: 16%;
+	height: 100%;
+	padding-left: 2%;
+	padding-right: 2%;
+}
+
+.pfp {
+	width: 100%;
+	padding-top: 100%;
+	-ms-interpolation-mode: nearest-neighbor;
+	image-rendering: -webkit-optimize-contrast;
+	image-rendering: optimizeSpeed;
+	image-rendering: -o-crisp-edges;
+	image-rendering: -moz-crisp-edges;	
+	image-rendering: pixelated;
+}
+
+.class:hover {
+	cursor: pointer;
 }

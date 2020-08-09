@@ -4,6 +4,20 @@ function player_init() {
 		SCREEN_WAIT = document.getElementById( "waitRoom" ),
 		SCREEN_GAME = document.getElementById( "gameRoom" );
 
+	var CLASS_B = document.getElementById( "classB" ),
+		CLASS_G = document.getElementById( "classG" ),
+		CLASS_P = document.getElementById( "classP" ),
+		CLASS_R = document.getElementById( "classR" ),
+		CLASS_Y = document.getElementById( "classY" );
+
+	var CANVAS_B = document.getElementById( "canvasB" ),
+		CANVAS_G = document.getElementById( "canvasG" ),
+		CANVAS_P = document.getElementById( "canvasP" ),
+		CANVAS_R = document.getElementById( "canvasR" ),
+		CANVAS_Y = document.getElementById( "canvasY" );
+
+	window.init_canvases( CANVAS_B, CANVAS_G, CANVAS_P, CANVAS_R, CANVAS_Y );
+
 	var TWIDTH_DG = 200,
 		THEIGHT_DG = 112,
 		SIZE_DG_TILE = 16,
@@ -103,7 +117,8 @@ function player_init() {
 	document.addEventListener( "keyup", handle_keyup );
 	document.addEventListener( "keydown", handle_keydown );
 
-	var tiles = [], 
+	var tiles = [],
+		players = {},
 		rooms, 
 		cooridors, 
 		row, 
@@ -117,6 +132,10 @@ function player_init() {
 			row.push( 0 );
 		}
 		tiles.push( row );
+	}
+
+	function BoundingBox( x1, x2 ) {
+
 	}
 
 	function Entity( x, y ) {
@@ -233,6 +252,32 @@ function player_init() {
 		window.set_render_room( start_room );
 	}
 
+	var selected = 'n';
+
+	function handle_b() {
+		if( selected != 'b' ) window.send( JSON.stringify( { action : 'c', old : selected, new : 'b' } ) );
+	}
+
+	function handle_g() {
+		if( selected != 'g' ) window.send( JSON.stringify( { action : 'c', old : selected, new : 'g' } ) );
+	}
+
+	function handle_p() {
+		if( selected != 'p' ) window.send( JSON.stringify( { action : 'c', old : selected, new : 'p' } ) );
+	}
+
+	function handle_r() {
+		if( selected != 'r' ) window.send( JSON.stringify( { action : 'c', old : selected, new : 'r' } ) );
+	}
+
+	function handle_y() {
+		if( selected != 'y' ) window.send( JSON.stringify( { action : 'c', old : selected, new : 'y' } ) );
+	}
+
+	function error_msg( msg ) {
+		alert( msg );
+	}
+
 	function handle_open( evt ) {
 		console.log( "opened" );
 	}
@@ -252,8 +297,44 @@ function player_init() {
 					case 's':
 						SCREEN_WAIT.setAttribute( "class", "hide" );
 						SCREEN_GAME.setAttribute( "class", "show" );
+						window.set_bgpry( false, -1 );
 						window.enable_view();
 						window.set_loop( update );
+						CLASS_B.removeEventListener( "click", handle_b );
+						CLASS_G.removeEventListener( "click", handle_g );
+						CLASS_P.removeEventListener( "click", handle_p );
+						CLASS_R.removeEventListener( "click", handle_r );
+						CLASS_Y.removeEventListener( "click", handle_y );
+						break;
+					case 'a':
+						if( obj_data.old != selected ) return;
+						if( obj_data.assign == 'n' ) {
+							error_msg( "That role is already taken!" );
+						} else {
+							selected = obj_data.assign;
+							CLASS_B.setAttribute( "class", "class" );
+							CLASS_G.setAttribute( "class", "class" );
+							CLASS_P.setAttribute( "class", "class" );
+							CLASS_R.setAttribute( "class", "class" );
+							CLASS_Y.setAttribute( "class", "class" );
+							switch( selected ) {
+								case 'b':
+									CLASS_B.setAttribute( "class", "class chosen" );
+									break;
+								case 'g':
+									CLASS_G.setAttribute( "class", "class chosen" );
+									break;
+								case 'p':
+									CLASS_P.setAttribute( "class", "class chosen" );
+									break;
+								case 'r':
+									CLASS_R.setAttribute( "class", "class chosen" );
+									break;
+								case 'y':
+									CLASS_Y.setAttribute( "class", "class chosen" );
+									break;
+							}
+						}
 						break;
 				}
 			}
@@ -268,6 +349,12 @@ function player_init() {
 						SCREEN_JOIN.setAttribute( "class", "hide" );
 						typing = false;
 						SCREEN_WAIT.setAttribute( "class", "show" );
+						window.set_bgpry( true, -1 );
+						CLASS_B.addEventListener( "click", handle_b );
+						CLASS_G.addEventListener( "click", handle_g );
+						CLASS_P.addEventListener( "click", handle_p );
+						CLASS_R.addEventListener( "click", handle_r );
+						CLASS_Y.addEventListener( "click", handle_y );
 						break;
 				}
 			}

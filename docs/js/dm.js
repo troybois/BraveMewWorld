@@ -411,7 +411,14 @@ function dm_init() {
 		last_update = -1,
 		ticks,
 		entities = [],
-		game_started = false;
+		game_started = false,
+		players = {};
+
+	players[ "b" ] = false;
+	players[ "g" ] = false;
+	players[ "p" ] = false;
+	players[ "r" ] = false;
+	players[ "y" ] = false;
 
 	entities.push( me );
 
@@ -509,6 +516,18 @@ function dm_init() {
 				switch( obj_data.action ) {
 					case 'j':
 						window.send( JSON.stringify( game_data ) );
+						break;
+					case 'c':
+						if( obj_data.new == obj_data.old ) return;
+						if( !players[ obj_data.new ] ) {
+							players[ obj_data.new ] = true;
+							if( obj_data.old != 'n' ) {
+								players[ obj_data.old ] = false;
+							}
+							window.send( JSON.stringify( { action : 'a', assign : obj_data.new, old : obj_data.old } ) );
+						} else {
+							window.send( JSON.stringify( { action : 'a', assign : 'n', old : obj_data.old } ) );
+						}
 						break;
 				}
 			}

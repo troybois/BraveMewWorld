@@ -23,6 +23,68 @@ function init_renderer() {
 		ASSET_WALL_E = new Image(),
 		ASSET_WALL_S = new Image(),
 		ASSET_WALL_W = new Image(),
+		ASSET_B_N = new Image(),
+		ASSET_B_NE = new Image(),
+		ASSET_B_E = new Image(),
+		ASSET_B_SE = new Image(),
+		ASSET_B_S = new Image(),
+		ASSET_B_SW = new Image(),
+		ASSET_B_W = new Image(),
+		ASSET_B_NW = new Image(),
+		ASSET_B_IDLE_R = new Image(),
+		ASSET_B_IDLE_L = new Image(),
+		ASSET_B_MOVE_R = new Image(),
+		ASSET_B_MOVE_L = new Image(),
+		ASSET_G_N = new Image(),
+		ASSET_G_NE = new Image(),
+		ASSET_G_E = new Image(),
+		ASSET_G_SE = new Image(),
+		ASSET_G_S = new Image(),
+		ASSET_G_SW = new Image(),
+		ASSET_G_W = new Image(),
+		ASSET_G_NW = new Image(),
+		ASSET_G_IDLE_R = new Image(),
+		ASSET_G_IDLE_L = new Image(),
+		ASSET_G_MOVE_R = new Image(),
+		ASSET_G_MOVE_L = new Image(),
+		ASSET_P_N = new Image(),
+		ASSET_P_NE = new Image(),
+		ASSET_P_E = new Image(),
+		ASSET_P_SE = new Image(),
+		ASSET_P_S = new Image(),
+		ASSET_P_SW = new Image(),
+		ASSET_P_W = new Image(),
+		ASSET_P_NW = new Image(),
+		ASSET_P_IDLE_R = new Image(),
+		ASSET_P_IDLE_L = new Image(),
+		ASSET_P_MOVE_R = new Image(),
+		ASSET_P_MOVE_L = new Image(),
+		ASSET_R_N = new Image(),
+		ASSET_R_NE = new Image(),
+		ASSET_R_E = new Image(),
+		ASSET_R_SE = new Image(),
+		ASSET_R_S = new Image(),
+		ASSET_R_SW = new Image(),
+		ASSET_R_W = new Image(),
+		ASSET_R_NW = new Image(),
+		ASSET_R_IDLE_R = new Image(),
+		ASSET_R_IDLE_L = new Image(),
+		ASSET_R_MOVE_R = new Image(),
+		ASSET_R_MOVE_L = new Image(),
+		ASSET_Y_N = new Image(),
+		ASSET_Y_NE = new Image(),
+		ASSET_Y_E = new Image(),
+		ASSET_Y_SE = new Image(),
+		ASSET_Y_S = new Image(),
+		ASSET_Y_SW = new Image(),
+		ASSET_Y_W = new Image(),
+		ASSET_Y_NW = new Image(),
+		ASSET_Y_IDLE_R = new Image(),
+		ASSET_Y_IDLE_L = new Image(),
+		ASSET_Y_MOVE_R = new Image(),
+		ASSET_Y_MOVE_L = new Image(),
+		ASSET_DEERMONGER_L = new Image(),
+		ASSET_DEERMONGER_R = new Image(),
 		CANVAS_DG = document.createElement( "canvas" ),
 		CANVAS_ROOM = document.createElement( "canvas" ),
 		SIZE_DG_TILE = 16,
@@ -32,7 +94,8 @@ function init_renderer() {
 		WIDTH_VIEWPORT = SIZE_DG_TILE * TWIDTH_VIEWPORT,
 		HWIDTH_VIEWPORT = ( WIDTH_VIEWPORT >> 1 ) | 0;
 		HEIGHT_VIEWPORT = ( window.screen.height * ( WIDTH_VIEWPORT / window.screen.width ) ) | 0,
-		HHEIGHT_VIEWPORT = ( HEIGHT_VIEWPORT >> 1 ) | 0;
+		HHEIGHT_VIEWPORT = ( HEIGHT_VIEWPORT >> 1 ) | 0,
+		TICKS_IDLE = 200;
 
 	var assets = [ ASSET_CORNER_E, ASSET_CORNER_W, ASSET_DOOR_CLOSED, ASSET_DOOR_OPEN, ASSET_EXIT_E, ASSET_EXIT_W, ASSET_FLOOR_1, ASSET_FLOOR_2, ASSET_LIGHT_E, ASSET_LIGHT_N, ASSET_LIGHT_S, ASSET_LIGHT_W, ASSET_SHADOW_E, ASSET_SHADOW_N, ASSET_SHADOW_W, ASSET_WALL_1, ASSET_WALL_2, ASSET_WALL_CORNER_E, ASSET_WALL_CORNER_W, ASSET_WALL_E, ASSET_WALL_S, ASSET_WALL_W ];
 
@@ -59,11 +122,91 @@ function init_renderer() {
 	ASSET_WALL_S.src = "assets/wall_s.png";
 	ASSET_WALL_W.src = "assets/wall_w.png";
 
+	ASSET_B_N.src = "assets/fireball_n_b.png";
+	ASSET_B_NE.src = "assets/fireball_ne_b.png";
+	ASSET_B_E.src = "assets/fireball_e_b.png";
+	ASSET_B_SE.src = "assets/fireball_se_b.png";
+	ASSET_B_S.src = "assets/fireball_s_b.png";
+	ASSET_B_SW.src = "assets/fireball_sw_b.png";
+	ASSET_B_W.src = "assets/fireball_w_b.png";
+	ASSET_B_NW.src = "assets/fireball_nw_b.png";
+	ASSET_B_IDLE_R.src = "assets/pib_idle_b_right.png";
+	ASSET_B_IDLE_L.src = "assets/pib_idle_b.png";
+	ASSET_B_MOVE_R.src = "assets/pib_move_b_right.png";
+	ASSET_B_MOVE_L.src = "assets/pib_move_b.png";
+
+	ASSET_G_N.src = "assets/fireball_n_g.png";
+	ASSET_G_NE.src = "assets/fireball_ne_g.png";
+	ASSET_G_E.src = "assets/fireball_e_g.png";
+	ASSET_G_SE.src = "assets/fireball_se_g.png";
+	ASSET_G_S.src = "assets/fireball_s_g.png";
+	ASSET_G_SW.src = "assets/fireball_sw_g.png";
+	ASSET_G_W.src = "assets/fireball_w_g.png";
+	ASSET_G_NW.src = "assets/fireball_nw_g.png";
+	ASSET_G_IDLE_R.src = "assets/pib_idle_g_right.png";
+	ASSET_G_IDLE_L.src = "assets/pib_idle_g.png";
+	ASSET_G_MOVE_R.src = "assets/pib_move_g_right.png";
+	ASSET_G_MOVE_L.src = "assets/pib_move_g.png";
+
+	ASSET_P_N.src = "assets/fireball_n_p.png";
+	ASSET_P_NE.src = "assets/fireball_ne_p.png";
+	ASSET_P_E.src = "assets/fireball_e_p.png";
+	ASSET_P_SE.src = "assets/fireball_se_p.png";
+	ASSET_P_S.src = "assets/fireball_s_p.png";
+	ASSET_P_SW.src = "assets/fireball_sw_p.png";
+	ASSET_P_W.src = "assets/fireball_w_p.png";
+	ASSET_P_NW.src = "assets/fireball_nw_p.png";
+	ASSET_P_IDLE_R.src = "assets/pib_idle_p_right.png";
+	ASSET_P_IDLE_L.src = "assets/pib_idle_p.png";
+	ASSET_P_MOVE_R.src = "assets/pib_move_p_right.png";
+	ASSET_P_MOVE_L.src = "assets/pib_move_p.png";
+
+	ASSET_R_N.src = "assets/fireball_n_r.png";
+	ASSET_R_NE.src = "assets/fireball_ne_r.png";
+	ASSET_R_E.src = "assets/fireball_e_r.png";
+	ASSET_R_SE.src = "assets/fireball_se_r.png";
+	ASSET_R_S.src = "assets/fireball_s_r.png";
+	ASSET_R_SW.src = "assets/fireball_sw_r.png";
+	ASSET_R_W.src = "assets/fireball_w_r.png";
+	ASSET_R_NW.src = "assets/fireball_nw_r.png";
+	ASSET_R_IDLE_R.src = "assets/pib_idle_r_right.png";
+	ASSET_R_IDLE_L.src = "assets/pib_idle_r.png";
+	ASSET_R_MOVE_R.src = "assets/pib_move_r_right.png";
+	ASSET_R_MOVE_L.src = "assets/pib_move_r.png";
+
+	ASSET_Y_N.src = "assets/fireball_n_y.png";
+	ASSET_Y_NE.src = "assets/fireball_ne_y.png";
+	ASSET_Y_E.src = "assets/fireball_e_y.png";
+	ASSET_Y_SE.src = "assets/fireball_se_y.png";
+	ASSET_Y_S.src = "assets/fireball_s_y.png";
+	ASSET_Y_SW.src = "assets/fireball_sw_y.png";
+	ASSET_Y_W.src = "assets/fireball_w_y.png";
+	ASSET_Y_NW.src = "assets/fireball_nw_y.png";
+	ASSET_Y_IDLE_R.src = "assets/pib_idle_y_right.png";
+	ASSET_Y_IDLE_L.src = "assets/pib_idle_y.png";
+	ASSET_Y_MOVE_R.src = "assets/pib_move_y_right.png";
+	ASSET_Y_MOVE_L.src = "assets/pib_move_y.png";
+
+	ASSET_DEERMONGER_R.src = "assets/deermonger_right.png";
+	ASSET_DEERMONGER_L.src = "assets/deermonger_left.png";
+
 	var game_started = false,
 		ctx_dg,
 		ctx_game,
 		ctx_room,
 		canvas_game,
+		canvas_b,
+		canvas_g,
+		canvas_p,
+		canvas_r,
+		canvas_y,
+		ctx_b,
+		ctx_g,
+		ctx_p,
+		ctx_r,
+		ctx_y,
+		bgpry_mode = false,
+		running = -1,
 		loop = null,
 		width_dg,
 		height_dg,
@@ -94,6 +237,34 @@ function init_renderer() {
 		canvas_game.width = WIDTH_VIEWPORT;
 		canvas_game.height = HEIGHT_VIEWPORT;
 		ctx_game = canvas_game.getContext( "2d" );
+	}
+
+	function init_canvases( b, g, p, r, y ) {
+		canvas_b = b;
+		canvas_g = g;
+		canvas_p = p;
+		canvas_r = r;
+		canvas_y = y;
+		canvas_b.width = 32;
+		canvas_b.height = 32;
+		canvas_g.width = 32;
+		canvas_g.height = 32;
+		canvas_p.width = 32;
+		canvas_p.height = 32;
+		canvas_r.width = 32;
+		canvas_r.height = 32;
+		canvas_y.width = 32;
+		canvas_y.height = 32;
+		ctx_b = canvas_b.getContext( "2d" );
+		ctx_g = canvas_g.getContext( "2d" );
+		ctx_p = canvas_p.getContext( "2d" );
+		ctx_r = canvas_r.getContext( "2d" );
+		ctx_y = canvas_y.getContext( "2d" );
+	}
+
+	function set_bgpry( mode, sel ) {
+		bgpry_mode = mode;
+		running = sel;
 	}
 
 	function render_room_doors( room ) {
@@ -249,18 +420,28 @@ function init_renderer() {
 					}
 				}
 			}
-		}
-		ctx_dg.globalCompositeOperation = "source-over";
-		if( cooridor.vertical ) {
-			ctx_dg.drawImage( ASSET_LIGHT_N, OFFSET_DG_X + ( cooridor.x1 + 1 ) * SIZE_DG_TILE, OFFSET_DG_Y + cooridor.y1 * SIZE_DG_TILE );
-			ctx_dg.drawImage( ASSET_LIGHT_S, OFFSET_DG_X + ( cooridor.x1 + 1 ) * SIZE_DG_TILE, OFFSET_DG_Y + cooridor.y2 * SIZE_DG_TILE );
-		} else {
-			ctx_dg.drawImage( ASSET_LIGHT_W, OFFSET_DG_X + cooridor.x1 * SIZE_DG_TILE, OFFSET_DG_Y + ( cooridor.y1 + 1 ) * SIZE_DG_TILE );
-			ctx_dg.drawImage( ASSET_LIGHT_E, OFFSET_DG_X + cooridor.x2 * SIZE_DG_TILE, OFFSET_DG_Y + ( cooridor.y1 + 1 ) * SIZE_DG_TILE );
+			ctx_dg.globalCompositeOperation = "source-over";
+			if( cooridor.vertical ) {
+				ctx_dg.drawImage( ASSET_LIGHT_N, OFFSET_DG_X + ( cooridor.x1 + 1 ) * SIZE_DG_TILE, OFFSET_DG_Y + cooridor.y1 * SIZE_DG_TILE );
+				ctx_dg.drawImage( ASSET_LIGHT_S, OFFSET_DG_X + ( cooridor.x1 + 1 ) * SIZE_DG_TILE, OFFSET_DG_Y + cooridor.y2 * SIZE_DG_TILE );
+			} else {
+				ctx_dg.drawImage( ASSET_LIGHT_W, OFFSET_DG_X + cooridor.x1 * SIZE_DG_TILE, OFFSET_DG_Y + ( cooridor.y1 + 1 ) * SIZE_DG_TILE );
+				ctx_dg.drawImage( ASSET_LIGHT_E, OFFSET_DG_X + cooridor.x2 * SIZE_DG_TILE, OFFSET_DG_Y + ( cooridor.y1 + 1 ) * SIZE_DG_TILE );
+			}
 		}
 	}
 
-	var time_last_ping = -1;
+	var time_last_ping = -1,
+		time_last_b = -1,
+		time_last_g = -1,
+		time_last_p = -1,
+		time_last_r = -1,
+		time_last_y = -1,
+		frame_b = 0,
+		frame_g = 0,
+		frame_p = 0,
+		frame_r = 0,
+		frame_y = 0;
 	var view_update = false;
 
 	function set_loop( f ) {
@@ -280,6 +461,44 @@ function init_renderer() {
 		if( loop != null ) {
 			loop( time );
 		}
+		if( bgpry_mode ) {
+			var bgpry_ticks;
+			if( time_last_b == -1 ) time_last_b = time;
+			if( time_last_g == -1 ) time_last_g = time;
+			if( time_last_p == -1 ) time_last_p = time;
+			if( time_last_r == -1 ) time_last_r = time;
+			if( time_last_y == -1 ) time_last_y = time;
+			if( time - time_last_b > TICKS_IDLE ) {
+				ctx_b.clearRect( 0, 0, 32, 32 );
+				frame_b = ( frame_b + 1 ) % 4;
+				ctx_b.drawImage( ASSET_B_IDLE_R, frame_b * 32, 0, 32, 32, 0, 0, 32, 32 );
+				time_last_b = time;
+			}
+			if( time - time_last_g > TICKS_IDLE ) {
+				ctx_g.clearRect( 0, 0, 32, 32 );
+				frame_g = ( frame_g + 1 ) % 4;
+				ctx_g.drawImage( ASSET_G_IDLE_R, frame_g * 32, 0, 32, 32, 0, 0, 32, 32 );
+				time_last_g = time;
+			}
+			if( time - time_last_p > TICKS_IDLE ) {
+				ctx_p.clearRect( 0, 0, 32, 32 );
+				frame_p = ( frame_p + 1 ) % 4;
+				ctx_p.drawImage( ASSET_P_IDLE_R, frame_p * 32, 0, 32, 32, 0, 0, 32, 32 );
+				time_last_p = time;
+			}
+			if( time - time_last_r > TICKS_IDLE ) {
+				ctx_r.clearRect( 0, 0, 32, 32 );
+				frame_r = ( frame_r + 1 ) % 4;
+				ctx_r.drawImage( ASSET_R_IDLE_R, frame_r * 32, 0, 32, 32, 0, 0, 32, 32 );
+				time_last_r = time;
+			}
+			if( time - time_last_y > TICKS_IDLE ) {
+				ctx_y.clearRect( 0, 0, 32, 32 );
+				frame_y = ( frame_y + 1 ) % 4;
+				ctx_y.drawImage( ASSET_Y_IDLE_R, frame_y * 32, 0, 32, 32, 0, 0, 32, 32 );
+				time_last_y = time;
+			}
+		}
 		if( view_update ) {
 			ctx_game.clearRect( 0, 0, WIDTH_VIEWPORT, HEIGHT_VIEWPORT );
 			ctx_game.drawImage( CANVAS_ROOM, OFFSET_DG_X + view_x - HWIDTH_VIEWPORT, OFFSET_DG_Y + view_y - HHEIGHT_VIEWPORT, WIDTH_VIEWPORT, HEIGHT_VIEWPORT, 0, 0, WIDTH_VIEWPORT, HEIGHT_VIEWPORT );
@@ -297,6 +516,8 @@ function init_renderer() {
 	window.set_loop = set_loop;
 	window.init_canvas_dg = init_canvas_dg;
 	window.init_canvas_game = init_canvas_game;
+	window.init_canvases = init_canvases;
+	window.set_bgpry = set_bgpry;
 	window.get_canvas_dg = get_canvas_dg;
 	window.render_dg_rooms = render_dg_rooms;
 	window.render_dg_cooridors = render_dg_cooridors;
