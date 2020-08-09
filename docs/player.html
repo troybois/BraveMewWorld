@@ -3,11 +3,17 @@
 	<head>
 		<title>ya YEET</title>
 		<link rel="stylesheet" type="text/css" href="css/game.css" />
+		<link rel="stylesheet" type = "text/css" href="css/style.css" />
 	</head>
 	<body>
 		<div id="joinRoom" class="show">
-			<input type="text" id="roomInput"/>
-			<button id="submitRoom"></button>
+			<div id="joinRoomGrid">
+				<div id="title"> Brave Mew World </div>
+				<ul id="joinRoomItem">
+					<li><input type="text" id="roomInput" placeholder="RoomCode" autofocus /></li>
+					<li><button id="submitRoom" class="gameButton"> Join Game </button></li>
+				</ul>
+			</div>
 		</div>
 		<div id="waitRoom" class="hide">
 			<div id="classB" class="class">
