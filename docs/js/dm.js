@@ -1,7 +1,8 @@
 // dm.js
 function dm_init() {
 	var SCREEN_CREATE = document.getElementById( "dungeonRoom" ),
-		SCREEN_JOIN = document.getElementById( "joinRoom" );
+		SCREEN_JOIN = document.getElementById( "joinRoom" ),
+		SCREEN_GAME = document.getElementById( "gameRoom" );
 
 	var TWIDTH_DG = 200,
 		THEIGHT_DG = 112,
@@ -219,6 +220,10 @@ function dm_init() {
 		}
 	}
 
+	function update( time ) {
+
+	}
+
 	CANVAS_CREATE.addEventListener( "mousemove", handle_mousemove_create );
 	CANVAS_CREATE.addEventListener( "mouseout", handle_mouseout_create );
 
@@ -262,7 +267,9 @@ function dm_init() {
 		room,
 		cooridor,
 		start_room,
-		end_room;
+		end_room,
+		game_data = {cooridors:cooridors, rooms:rooms};
+			
 
 	for( i = 0; i < THEIGHT_DG; ++i ) {
 		row = [];
@@ -273,6 +280,15 @@ function dm_init() {
 	}
 
 	function parse_actions() {
+		game_data[ "action" ] = 'd';
+		game_data[ "start_x1" ] = start_x1; 
+		game_data[ "start_x2" ] = start_x2; 
+		game_data[ "start_y1" ] = start_y1; 
+		game_data[ "start_y2" ] = start_y2;
+		game_data[ "end_x1" ] = end_x1; 
+		game_data[ "end_x2" ] = end_x2; 
+		game_data[ "end_y1" ] = end_y1; 
+		game_data[ "end_y2" ] = end_y2;
 		var action, x1, y1, x2, y2;
 		while( dungeon_actions.length > 0 ) {
 			action = dungeon_actions.pop();
@@ -308,7 +324,7 @@ function dm_init() {
 				}
 			}
 		}
-		console.log( tiles );
+		console.log( JSON.stringify( game_data ) );
 		for( i = 0; i < cooridors.length; ++i ) {
 			cooridor = cooridors[ i ];
 			if( cooridor.vertical == null ) {
@@ -346,13 +362,41 @@ function dm_init() {
 
 	var BUTTON_JOIN = document.getElementById( "submitRoom" );
 
+	var joined = false;
+
 	function handle_open( evt ) {
 		window.send( "host" );
 		console.log( "opened" );
 	}
 
 	function handle_msg( evt ) {
-		console.log( evt.data );
+		var msg = evt.data, 
+			obj_data,
+			num;
+		if( joined ) {
+			if( msg.charAt( 0 ) == '{' ) {
+				obj_data = JSON.parse( msg );
+				switch( obj_data.action ) {
+					case 'j':
+						window.send( JSON.stringify( game_data ) );
+						break;
+				}
+			}
+		} else {
+			num = msg.charAt( 0 );
+			if( num >= '0' && num <= '9' ) {
+				num = num - '0';
+				switch( num ) {
+					case 0:
+						window.set_loop( update );
+						joined = true;
+						SCREEN_JOIN.setAttribute( "class", "hide" );
+						SCREEN_GAME.setAttribute( "class", "show" );
+						break;
+				}
+			}
+		}
+		console.log( msg );
 	}
 
 	function handle_button_join() {

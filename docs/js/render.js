@@ -259,9 +259,14 @@ function init_renderer() {
 	}
 
 	var time_last_ping = -1;
+	var view_update = false;
 
 	function set_loop( f ) {
 		loop = f;
+	}
+
+	function enable_view() {
+		view_update	= true;
 	}
 
 	function render_loop( time ) {
@@ -272,6 +277,9 @@ function init_renderer() {
 		}
 		if( loop != null ) {
 			loop();
+		}
+		if( view_update ) {
+			
 		}
 		window.requestAnimationFrame( render_loop );
 	}
