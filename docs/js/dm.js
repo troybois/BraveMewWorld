@@ -100,6 +100,7 @@ function dm_init() {
 				break;
 			case 13: // ENTER
 				down_enter = ( k = pressed );
+				console.log( pressed );
 				break;
 			case 82: // R
 				down_r = ( k = pressed );
@@ -140,11 +141,11 @@ function dm_init() {
 	}
 
 	function handle_keyup( evt ) {
-		if( !typing && keyblade( evt.keyCode, false ) ) evt.preventDefault();
+		if( keyblade( evt.keyCode, false ) && !typing ) evt.preventDefault();
 	}
 
 	function handle_keydown( evt ) {
-		if( !typing && keyblade( evt.keyCode, true ) ) evt.preventDefault();
+		if( keyblade( evt.keyCode, true ) && !typing ) evt.preventDefault();
 	}
 
 	function create_loop( time ) {
@@ -446,6 +447,7 @@ function dm_init() {
 		if( down_enter ) {
 			if( !game_started ) {
 				window.send( JSON.stringify( { action: 's' } ) );
+				console.log( "whoops" )
 				game_started = true;
 			}
 		}
